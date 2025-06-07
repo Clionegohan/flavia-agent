@@ -224,3 +224,13 @@ def classify_ai_error(error: Exception, provider: str) -> FlaviaException:
         provider=provider,
         original_error=error
     )
+
+
+class RecipeGenerationError(FlaviaException):
+    """レシピ生成関連のエラー"""
+    pass
+
+
+class SaleInfoError(FlaviaException):
+    """特売情報取得関連のエラー"""
+    pass

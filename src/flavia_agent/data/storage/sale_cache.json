@@ -1,0 +1,88 @@
+{
+  "store_name": "ユニバース",
+  "date": "2025-06-07",
+  "url": "https://test.co.jp",
+  "fetched_at": "2025-06-07T22:01:55.150562",
+  "items": [
+    {
+      "name": "鶏もも肉（国産）",
+      "price": "398円",
+      "original_price": null,
+      "discount_rate": null,
+      "category": "肉類",
+      "notes": "Web取得"
+    },
+    {
+      "name": "豚バラ肉（カナダ産）",
+      "price": "298円",
+      "original_price": null,
+      "discount_rate": null,
+      "category": "肉類",
+      "notes": "Web取得"
+    },
+    {
+      "name": "牛こま切れ（オーストラリア産）",
+      "price": "580円",
+      "original_price": null,
+      "discount_rate": null,
+      "category": "肉類",
+      "notes": "Web取得"
+    },
+    {
+      "name": "キャベツ（茨城県産）",
+      "price": "198円",
+      "original_price": null,
+      "discount_rate": null,
+      "category": "野菜",
+      "notes": "Web取得"
+    },
+    {
+      "name": "大根（千葉県産）",
+      "price": "158円",
+      "original_price": null,
+      "discount_rate": null,
+      "category": "野菜",
+      "notes": "Web取得"
+    },
+    {
+      "name": "じゃがいも（北海道産）",
+      "price": "248円",
+      "original_price": null,
+      "discount_rate": null,
+      "category": "野菜",
+      "notes": "Web取得"
+    },
+    {
+      "name": "玉ねぎ（北海道産）",
+      "price": "178円",
+      "original_price": null,
+      "discount_rate": null,
+      "category": "その他",
+      "notes": "Web取得"
+    },
+    {
+      "name": "サーモン（ノルウェー産）",
+      "price": "398円",
+      "original_price": null,
+      "discount_rate": null,
+      "category": "魚介類",
+      "notes": "Web取得"
+    },
+    {
+      "name": "さば（国産）",
+      "price": "298円",
+      "original_price": null,
+      "discount_rate": null,
+      "category": "魚介類",
+      "notes": "Web取得"
+    },
+    {
+      "name": "木綿豆腐",
+      "price": "98円",
+      "original_price": null,
+      "discount_rate": null,
+      "category": "卵・豆腐",
+      "notes": "Web取得"
+    }
+  ]
+}
