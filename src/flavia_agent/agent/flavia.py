@@ -265,7 +265,7 @@ class FlaviaAgent(BaseAgent):
         """Anthropic API呼び出し"""
         try:
             response = await self.clients["anthropic"].messages.create(
-                model="claude-3-sonnet-20240229",
+                model="claude-3-5-sonnet-20241022",
                 max_tokens=2000,
                 temperature=0.7,
                 messages=[{"role": "user", "content": prompt}]
@@ -286,7 +286,7 @@ class FlaviaAgent(BaseAgent):
         """プロバイダーのモデル名を取得"""
         models = {
             "openai": "gpt-3.5-turbo",
-            "anthropic": "claude-3-sonnet-20240229"
+            "anthropic": "claude-3-5-sonnet-20241022"
         }
         return models.get(provider, "unknown")
     
