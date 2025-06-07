@@ -1,7 +1,14 @@
 import pytest
 from unittest.mock import AsyncMock, patch
+import sys
+from pathlib import Path
+
+# Add src to Python path for imports
+src_path = Path(__file__).parent.parent / "src"
+sys.path.insert(0, str(src_path))
+
 from flavia_agent.agent.flavia import FlaviaAgent
-from flavia_agent.agent.base import MealPreferences
+from flavia_agent.data.models import MealPreferences
 
 
 @pytest.fixture
@@ -18,7 +25,7 @@ def sample_preferences():
 @pytest.fixture
 def agent():
     with patch.dict('os.environ', {'OPENAI_API_KEY': 'test-key'}):
-        return FlaviaAgent(provider="openai")
+        return FlaviaAgent(primary_provider="openai", fallback_provider=None)
 
 
 @pytest.mark.asyncio
@@ -37,7 +44,7 @@ async def test_generate_meal_plan(agent, sample_preferences):
         }
     ]'''
     
-    with patch.object(agent, '_call_ai', return_value=mock_response):
+    with patch.object(agent, '_call_openai', return_value=mock_response):
         recipes = await agent.generate_meal_plan(sample_preferences)
         
         assert len(recipes) == 1

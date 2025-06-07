@@ -29,18 +29,26 @@ Flavia is an intelligent meal planning assistant that suggests personalized reci
 
 3. **Run the app:**
    ```bash
-   streamlit run flavia_agent/ui/streamlit_app.py
+   # Option 1: Using script
+   ./scripts/run_app.sh
+   
+   # Option 2: Direct command
+   streamlit run src/flavia_agent/ui/streamlit_app.py
    ```
 
 ## Project Structure
 
 ```
 flavia-agent/
-├── flavia_agent/
-│   ├── agent/          # AI agent logic
-│   ├── data/           # Data models and storage
-│   └── ui/             # Streamlit interface
+├── src/
+│   └── flavia_agent/
+│       ├── agent/      # AI agent logic
+│       ├── data/       # Data models and storage
+│       │   ├── models/ # Pydantic models
+│       │   └── schemas/# Database schemas (future)
+│       └── ui/         # Streamlit interface
 ├── tests/              # Test files
+├── scripts/            # Utility scripts
 ├── docs/               # Project documentation
 ├── .env.example        # Environment template
 └── pyproject.toml      # Project configuration
