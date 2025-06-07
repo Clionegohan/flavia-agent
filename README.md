@@ -1,4 +1,5 @@
 # 🍽️ Flavia - AI Meal Planning Agent
+*献立×レシピ×買い物エージェント*
 
 Flavia is an intelligent meal planning assistant that suggests personalized recipes based on your budget, dietary preferences, and cooking constraints.
 
@@ -15,7 +16,7 @@ Flavia is an intelligent meal planning assistant that suggests personalized reci
 
 1. **Clone and setup:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Clionegohan/flavia-agent.git
    cd flavia-agent
    source .venv/bin/activate
    ```
@@ -40,6 +41,7 @@ flavia-agent/
 │   ├── data/           # Data models and storage
 │   └── ui/             # Streamlit interface
 ├── tests/              # Test files
+├── docs/               # Project documentation
 ├── .env.example        # Environment template
 └── pyproject.toml      # Project configuration
 ```
