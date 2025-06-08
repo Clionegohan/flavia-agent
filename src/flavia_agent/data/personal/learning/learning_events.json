@@ -92,5 +92,23 @@
     "recipe_context": {},
     "feedback_data": null,
     "learning_outcome": "recorded"
+  },
+  {
+    "event_id": "interaction_20250608_105715",
+    "timestamp": "2025-06-08T10:57:15.025381",
+    "event_type": "chat_message",
+    "user_action": "sent_message",
+    "recipe_context": {},
+    "feedback_data": null,
+    "learning_outcome": "recorded"
+  },
+  {
+    "event_id": "interaction_20250608_114355",
+    "timestamp": "2025-06-08T11:43:55.403123",
+    "event_type": "chat_message",
+    "user_action": "sent_message",
+    "recipe_context": {},
+    "feedback_data": null,
+    "learning_outcome": "recorded"
   }
 ]

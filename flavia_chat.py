@@ -258,9 +258,98 @@ def render_chat_message(message: Dict[str, Any]):
             # レシピが含まれている場合の特別表示
             if "recipes" in message:
                 render_recipe_cards(message["recipes"])
+            
+            # 週間夕食プランが含まれている場合の特別表示
+            elif "dinners" in message and "shopping_list" in message:
+                render_weekly_dinner_plan(message["dinners"], message["shopping_list"])
+
+def render_weekly_dinner_plan(dinners: List[Dict], shopping_list: Dict[str, Any]):
+    """週間夕食プランをレンダリング"""
+    
+    # タブで整理
+    tab1, tab2 = st.tabs(["📅 夕食メニュー", "🛒 買い物リスト"])
+    
+    with tab1:
+        st.subheader("🍽️ 夕食メニュー詳細")
+        
+        for i, dinner in enumerate(dinners):
+            with st.expander(f"**Day {dinner['day']} ({dinner['date']})** - {dinner['main_dish']}", expanded=(i==0)):
+                col1, col2 = st.columns([2, 1])
+                
+                with col1:
+                    st.markdown(f"""
+                    <div class="recipe-card">
+                        <div class="recipe-title">🍳 {dinner['main_dish']}</div>
+                        <p><strong>説明:</strong> {dinner.get('description', '')}</p>
+                        
+                        <div class="recipe-meta">
+                            <span class="meta-item">💰 ${dinner.get('estimated_cost', 0):.2f}</span>
+                            <span class="meta-item">⏱️ 準備{dinner.get('detailed_recipe', {}).get('prep_time', 15)}分</span>
+                            <span class="meta-item">🔥 調理{dinner.get('detailed_recipe', {}).get('cook_time', 30)}分</span>
+                            <span class="meta-item">👤 {dinner.get('detailed_recipe', {}).get('servings', 2)}人分</span>
+                            <span class="meta-item">📊 {dinner.get('cooking_difficulty', '普通')}</span>
+                        </div>
+                        
+                        <div style="margin-top: 1rem;">
+                            <strong>🥬 材料:</strong><br>
+                            {'<br>'.join(f"• {ing}" for ing in dinner.get('ingredients', []))}
+                        </div>
+                        
+                        <div style="margin-top: 1rem;">
+                            <strong>📋 作り方:</strong><br>
+                            {'<br>'.join(f"{idx+1}. {step}" for idx, step in enumerate(dinner.get('detailed_recipe', {}).get('instructions', [])))}
+                        </div>
+                        
+                        <div style="margin-top: 1rem;">
+                            <strong>🍎 栄養情報:</strong> {dinner.get('nutrition_info', '情報なし')}
+                        </div>
+                        
+                        <div class="learning-badge" style="margin-top: 1rem;">AI学習型レシピ</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col2:
+                    st.markdown("**このレシピを評価:**")
+                    rating_key = f"dinner_rating_{dinner['day']}_{i}"
+                    
+                    # 星評価ボタン
+                    cols = st.columns(5)
+                    for star in range(1, 6):
+                        if cols[star-1].button(f"{'⭐' * star}", key=f"{rating_key}_{star}"):
+                            # 夕食レシピの評価を記録
+                            rate_dinner_recipe(dinner, star)
+                            st.rerun()
+    
+    with tab2:
+        st.subheader("🛒 統合買い物リスト")
+        
+        # サマリー情報
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("総食材数", shopping_list.get('total_unique_ingredients', 0))
+        with col2:
+            st.metric("予算総額", f"${shopping_list.get('total_estimated_cost', 0):.2f}")
+        with col3:
+            st.metric("買い物時間", shopping_list.get('estimated_shopping_time', '30-45分'))
+        
+        # カテゴリ別買い物リスト
+        st.markdown("### 📝 カテゴリ別買い物リスト")
+        
+        categories = shopping_list.get('ingredients_by_category', {})
+        for category, items in categories.items():
+            if items:  # アイテムがある場合のみ表示
+                with st.expander(f"**{category}** ({len(items)}品目)"):
+                    for item in items:
+                        st.markdown(f"• {item}")
+        
+        # 買い物のコツ
+        st.markdown("### 💡 買い物のコツ")
+        notes = shopping_list.get('shopping_notes', [])
+        for note in notes:
+            st.info(note)
 
 def render_recipe_cards(recipes: List[Any]):
-    """レシピカードをレンダリング"""
+    """レシピカードをレンダリング（従来版）"""
     for i, recipe in enumerate(recipes):
         with st.container():
             col1, col2 = st.columns([3, 1])
@@ -332,49 +421,100 @@ def rate_recipe(recipe: Any, rating: int):
     except Exception as e:
         st.error(f"評価の記録に失敗しました: {e}")
 
-async def generate_recipe_response(user_message: str) -> Dict[str, Any]:
-    """レシピ応答を生成"""
+def rate_dinner_recipe(dinner: Dict, rating: int):
+    """夕食レシピを評価"""
+    try:
+        agent = st.session_state.flavia_agent
+        
+        # 夕食レシピコンテキストの準備
+        recipe_context = {
+            "ingredients": dinner.get('ingredients', []),
+            "main_dish": dinner.get('main_dish', ''),
+            "cost": dinner.get('estimated_cost', 0),
+            "cooking_difficulty": dinner.get('cooking_difficulty', '普通'),
+            "day": dinner.get('day', 1),
+            "date": dinner.get('date', '')
+        }
+        
+        # フィードバック記録
+        feedback_id = agent.rate_recipe(
+            recipe_name=dinner.get('main_dish', '料理'),
+            rating=rating,
+            comments=f"夕食プランDay{dinner.get('day', 1)}から{rating}つ星評価",
+            recipe_context=recipe_context
+        )
+        
+        # セッション状態に記録
+        if "dinner_ratings" not in st.session_state:
+            st.session_state.dinner_ratings = {}
+        st.session_state.dinner_ratings[f"day_{dinner.get('day', 1)}"] = rating
+        
+        # 成功メッセージ
+        st.success(f"⭐ {dinner.get('main_dish', '料理')} を {rating}つ星で評価しました！学習に反映されます。")
+        
+        # インタラクション記録
+        agent.record_interaction(
+            interaction_type="dinner_recipe_rating",
+            details={
+                "action": f"rated_dinner_{rating}_stars",
+                "recipe_name": dinner.get('main_dish', ''),
+                "rating": rating,
+                "day": dinner.get('day', 1),
+                "feedback_id": feedback_id
+            }
+        )
+        
+    except Exception as e:
+        st.error(f"評価の記録に失敗しました: {e}")
+
+async def generate_weekly_dinner_response(days: int = 7, user_message: str = "") -> Dict[str, Any]:
+    """週間夕食プラン応答を生成"""
     try:
         agent = st.session_state.flavia_agent
         
         # ユーザーインタラクションを記録
         agent.record_interaction(
-            interaction_type="chat_message",
+            interaction_type="weekly_dinner_request",
             details={
-                "action": "sent_message",
+                "action": "requested_weekly_plan",
+                "days": days,
                 "message": user_message,
                 "timestamp": datetime.now().isoformat()
             }
         )
         
-        # レシピ生成
-        result = await agent.generate_personalized_meal_plan(
+        # 週間夕食プラン生成
+        result = await agent.generate_weekly_dinner_plan(
+            days=days,
             user_request=user_message,
             include_sale_info=True,
             sale_url="cache"
         )
         
-        recipes = result.get("recipes", [])
-        st.session_state.current_recipes = recipes
+        dinners = result.get("dinners", [])
+        shopping_list = result.get("shopping_list", {})
         
         # レスポンス生成
-        if recipes:
-            recipe_count = len(recipes)
-            response = f"素晴らしいリクエストですね！🎯\n\nあなたの嗜好を考慮して、**{recipe_count}つのレシピ**を提案します。\n\n"
+        if dinners:
+            response = f"🍽️ **{days}日分の夕食プラン**を作成しました！\n\n"
+            response += f"💰 **総予算**: ${result.get('total_estimated_cost', 0):.2f}\n"
+            response += f"🛒 **買い物リスト**: {shopping_list.get('total_unique_ingredients', 0)}種類の食材\n\n"
             
             if result.get("sale_integration"):
-                response += "💰 **特売情報も活用**してコストパフォーマンスを重視しました！\n\n"
+                response += "💡 **特売情報も活用**してコストを最適化しました！\n\n"
             
-            response += "各レシピの右側で⭐評価をお願いします。あなたの評価で私はもっと賢くなります！"
+            response += "下記の詳細プランをご確認ください。気に入ったレシピは⭐評価をお願いします！"
             
             return {
                 "content": response,
-                "recipes": recipes,
-                "generation_info": result
+                "dinners": dinners,
+                "shopping_list": shopping_list,
+                "generation_info": result,
+                "plan_type": "weekly_dinner"
             }
         else:
             return {
-                "content": "申し訳ありませんが、条件に合うレシピを見つけられませんでした。別の条件で試してみませんか？"
+                "content": "申し訳ありませんが、献立プランの生成に失敗しました。別の条件で試してみませんか？"
             }
             
     except Exception as e:
@@ -465,6 +605,17 @@ def render_sidebar():
                 # クイックアクション
                 st.subheader("⚡ クイックアクション")
                 
+                # 週間夕食プラン生成
+                st.markdown("**📅 週間夕食プラン**")
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("📋 7日間プラン", use_container_width=True):
+                        handle_weekly_dinner_action(7)
+                with col2:
+                    if st.button("📋 3日間プラン", use_container_width=True):
+                        handle_weekly_dinner_action(3)
+                
+                st.markdown("**🍳 単発レシピ**")
                 if st.button("🎯 今日のおすすめ", use_container_width=True):
                     handle_quick_action("今日のおすすめレシピを教えて")
                 
@@ -497,6 +648,20 @@ def handle_quick_action(message: str):
         "role": "user",
         "content": message,
         "timestamp": datetime.now().isoformat()
+    })
+    
+    # 再実行して応答を生成
+    st.rerun()
+
+def handle_weekly_dinner_action(days: int):
+    """週間夕食プランアクションを処理"""
+    # 特別なメッセージタイプとして追加
+    st.session_state.messages.append({
+        "role": "user",
+        "content": f"{days}日間の夕食プランを作成してください",
+        "timestamp": datetime.now().isoformat(),
+        "action_type": "weekly_dinner_plan",
+        "days": days
     })
     
     # 再実行して応答を生成
@@ -544,24 +709,53 @@ def main():
             
             # アシスタント応答を生成・表示
             with st.chat_message("assistant", avatar="🍽️"):
-                with st.spinner("🍳 レシピを考えています..."):
-                    # 非同期処理の実行
-                    response = asyncio.run(generate_recipe_response(prompt))
-                    
-                    # 応答を表示
-                    st.write(response["content"])
-                    
-                    # レシピカードを表示
-                    if "recipes" in response:
-                        render_recipe_cards(response["recipes"])
-                    
-                    # メッセージ履歴に追加
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": response["content"],
-                        "recipes": response.get("recipes", []),
-                        "timestamp": datetime.now().isoformat()
-                    })
+                # 週間プランリクエストかチェック
+                last_message = st.session_state.messages[-1]
+                is_weekly_plan = last_message.get("action_type") == "weekly_dinner_plan"
+                
+                if is_weekly_plan:
+                    days = last_message.get("days", 7)
+                    with st.spinner(f"🍽️ {days}日間の夕食プランを作成中..."):
+                        # 週間プラン生成
+                        response = asyncio.run(generate_weekly_dinner_response(days, prompt))
+                        
+                        # 応答を表示
+                        st.write(response["content"])
+                        
+                        # 週間プランを表示
+                        if "dinners" in response and "shopping_list" in response:
+                            render_weekly_dinner_plan(response["dinners"], response["shopping_list"])
+                        
+                        # メッセージ履歴に追加
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": response["content"],
+                            "dinners": response.get("dinners", []),
+                            "shopping_list": response.get("shopping_list", {}),
+                            "plan_type": "weekly_dinner",
+                            "timestamp": datetime.now().isoformat()
+                        })
+                else:
+                    with st.spinner("🍳 夕食プランを考えています..."):
+                        # デフォルトで7日間プラン生成
+                        response = asyncio.run(generate_weekly_dinner_response(7, prompt))
+                        
+                        # 応答を表示
+                        st.write(response["content"])
+                        
+                        # 週間プランを表示
+                        if "dinners" in response and "shopping_list" in response:
+                            render_weekly_dinner_plan(response["dinners"], response["shopping_list"])
+                        
+                        # メッセージ履歴に追加
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": response["content"],
+                            "dinners": response.get("dinners", []),
+                            "shopping_list": response.get("shopping_list", {}),
+                            "plan_type": "weekly_dinner",
+                            "timestamp": datetime.now().isoformat()
+                        })
     else:
         st.info("👈 サイドバーの「🚀 Flavia起動」ボタンを押してエージェントを開始してください。")
 

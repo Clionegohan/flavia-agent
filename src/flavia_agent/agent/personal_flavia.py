@@ -69,6 +69,73 @@ class PersonalFlaviaAgent:
             self.logger.error("Failed to load personal data", error=str(e))
             raise RecipeGenerationError(f"個人データの読み込みに失敗: {e}")
     
+    async def generate_weekly_dinner_plan(
+        self,
+        days: int = 7,
+        include_sale_info: bool = True,
+        sale_url: Optional[str] = None,
+        user_request: str = ""
+    ) -> Dict[str, Any]:
+        """指定日数分の夕食メニュー + 詳細レシピ + 買い物リスト生成"""
+        try:
+            self.logger.info(
+                "Starting weekly dinner plan generation",
+                days=days,
+                include_sale_info=include_sale_info
+            )
+            
+            # 1. 個人コンテキストの構築
+            personal_context = self.context_builder.build_recipe_context()
+            
+            # 2. 特売情報の取得
+            sale_context = ""
+            if include_sale_info and sale_url:
+                sale_info = await self._fetch_sale_info(sale_url)
+                if sale_info:
+                    sale_context = self._build_sale_context(sale_info)
+            
+            # 3. 週間献立プロンプト作成
+            weekly_prompt = self._create_weekly_dinner_prompt(
+                days, personal_context, sale_context, user_request
+            )
+            
+            # 4. AI週間献立生成
+            dinner_plan = await self._generate_weekly_dinners(weekly_prompt, days)
+            
+            # 5. 買い物リスト生成
+            shopping_list = self._generate_shopping_list(dinner_plan["dinners"])
+            
+            # 6. 結果構築
+            result = {
+                "success": True,
+                "plan_days": days,
+                "dinners": dinner_plan["dinners"],
+                "shopping_list": shopping_list,
+                "personal_considerations": self._get_personal_considerations(),
+                "generation_time": datetime.now().isoformat(),
+                "total_estimated_cost": sum(d.get("estimated_cost", 0) for d in dinner_plan["dinners"]),
+                "request": user_request
+            }
+            
+            if sale_context:
+                result["sale_integration"] = "特売情報を活用しました"
+            
+            self.logger.info(
+                "Weekly dinner plan generated successfully",
+                days=days,
+                total_cost=result["total_estimated_cost"]
+            )
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(
+                "Weekly dinner plan generation failed",
+                error=str(e),
+                days=days
+            )
+            raise RecipeGenerationError(f"週間献立生成エラー: {e}")
+
     async def generate_personalized_meal_plan(
         self, 
         user_request: str = "今日の献立を考えて",
@@ -708,3 +775,174 @@ class PersonalFlaviaAgent:
         )
         
         return dashboard
+    
+    def _create_weekly_dinner_prompt(
+        self, 
+        days: int, 
+        personal_context: str, 
+        sale_context: str, 
+        user_request: str
+    ) -> str:
+        """週間夕食献立生成用プロンプトを作成"""
+        
+        base_prompt = f"""
+あなたは学習型AI料理パートナーFlaviaです。
+{days}日分の夕食メニューと詳細レシピ、統合買い物リストを生成してください。
+
+【個人情報・嗜好】
+{personal_context}
+
+【特売情報】
+{sale_context if sale_context else "特売情報は考慮しません"}
+
+【ユーザーリクエスト】
+{user_request if user_request else "栄養バランスが良く、美味しい夕食を考えて"}
+
+【出力形式】
+以下のJSON形式で出力してください：
+
+{{
+  "dinners": [
+    {{
+      "day": 1,
+      "date": "2025-06-08",
+      "main_dish": "料理名",
+      "description": "料理の説明",
+      "ingredients": ["材料1", "材料2", "材料3"],
+      "detailed_recipe": {{
+        "prep_time": 15,
+        "cook_time": 30,
+        "servings": 2,
+        "instructions": [
+          "手順1",
+          "手順2", 
+          "手順3"
+        ]
+      }},
+      "estimated_cost": 12.50,
+      "nutrition_info": "カロリー・栄養情報",
+      "cooking_difficulty": "簡単・普通・難しい"
+    }}
+  ]
+}}
+
+要件：
+- {days}日分すべて異なる料理
+- 栄養バランスを考慮
+- 個人の嗜好・制約を反映
+- 実用的で現実的なレシピ
+- 買い物しやすい材料使用
+"""
+        return base_prompt
+    
+    async def _generate_weekly_dinners(self, prompt: str, days: int) -> Dict[str, Any]:
+        """AI を使って週間夕食プランを生成"""
+        try:
+            response = await self._call_ai_with_fallback(prompt, "weekly_dinners")
+            
+            # JSON解析を試行
+            try:
+                import json
+                dinner_data = json.loads(response)
+                return dinner_data
+            except json.JSONDecodeError:
+                # JSONパースに失敗した場合のフォールバック
+                return self._create_fallback_dinner_plan(days)
+                
+        except Exception as e:
+            self.logger.error(f"Weekly dinner generation failed: {e}")
+            return self._create_fallback_dinner_plan(days)
+    
+    def _create_fallback_dinner_plan(self, days: int) -> Dict[str, Any]:
+        """フォールバック用のシンプル夕食プラン"""
+        from datetime import datetime, timedelta
+        
+        fallback_dinners = [
+            "鶏の照り焼き丼", "鮭のムニエル", "豚の生姜焼き", "オムライス",
+            "カレーライス", "ハンバーグ", "麻婆豆腐"
+        ]
+        
+        dinners = []
+        start_date = datetime.now()
+        
+        for i in range(days):
+            dinner_name = fallback_dinners[i % len(fallback_dinners)]
+            date = (start_date + timedelta(days=i)).strftime("%Y-%m-%d")
+            
+            dinners.append({
+                "day": i + 1,
+                "date": date,
+                "main_dish": dinner_name,
+                "description": f"美味しい{dinner_name}です",
+                "ingredients": ["メイン食材", "調味料", "野菜"],
+                "detailed_recipe": {
+                    "prep_time": 15,
+                    "cook_time": 25,
+                    "servings": 2,
+                    "instructions": [
+                        "材料を準備する",
+                        "調理する",
+                        "盛り付けて完成"
+                    ]
+                },
+                "estimated_cost": 8.0 + (i * 1.5),
+                "nutrition_info": "約500kcal、タンパク質・野菜バランス良し",
+                "cooking_difficulty": "普通"
+            })
+        
+        return {"dinners": dinners}
+    
+    def _generate_shopping_list(self, dinners: list) -> Dict[str, Any]:
+        """夕食メニューから統合買い物リストを生成"""
+        
+        # 材料を分類・集計
+        ingredients_by_category = {
+            "肉・魚類": [],
+            "野菜・果物": [],
+            "調味料・スパイス": [],
+            "米・麺・パン": [],
+            "乳製品・卵": [],
+            "その他": []
+        }
+        
+        ingredient_counts = {}
+        total_cost = 0
+        
+        # 各夕食から材料を集計
+        for dinner in dinners:
+            total_cost += dinner.get("estimated_cost", 0)
+            for ingredient in dinner.get("ingredients", []):
+                if ingredient in ingredient_counts:
+                    ingredient_counts[ingredient] += 1
+                else:
+                    ingredient_counts[ingredient] = 1
+        
+        # 材料をカテゴリ分け（シンプルな分類）
+        for ingredient, count in ingredient_counts.items():
+            ingredient_with_count = f"{ingredient} ×{count}" if count > 1 else ingredient
+            
+            # カテゴリ分類（キーワードベース）
+            if any(word in ingredient.lower() for word in ["鶏", "豚", "牛", "魚", "肉"]):
+                ingredients_by_category["肉・魚類"].append(ingredient_with_count)
+            elif any(word in ingredient.lower() for word in ["野菜", "キャベツ", "人参", "玉ねぎ", "トマト"]):
+                ingredients_by_category["野菜・果物"].append(ingredient_with_count)
+            elif any(word in ingredient.lower() for word in ["醤油", "味噌", "塩", "砂糖", "油"]):
+                ingredients_by_category["調味料・スパイス"].append(ingredient_with_count)
+            elif any(word in ingredient.lower() for word in ["米", "麺", "パン", "パスタ"]):
+                ingredients_by_category["米・麺・パン"].append(ingredient_with_count)
+            elif any(word in ingredient.lower() for word in ["牛乳", "卵", "チーズ", "バター"]):
+                ingredients_by_category["乳製品・卵"].append(ingredient_with_count)
+            else:
+                ingredients_by_category["その他"].append(ingredient_with_count)
+        
+        return {
+            "ingredients_by_category": ingredients_by_category,
+            "total_estimated_cost": total_cost,
+            "shopping_notes": [
+                "新鮮な食材を選んでください",
+                "特売商品があれば代替を検討",
+                "冷凍・保存の利く食材は多めに購入OK"
+            ],
+            "estimated_shopping_time": "30-45分",
+            "total_unique_ingredients": len(ingredient_counts)
+        }
