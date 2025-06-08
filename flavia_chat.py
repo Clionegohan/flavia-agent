@@ -19,102 +19,203 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# カスタムCSS
+# 最適化された洗練UI CSS
 st.markdown("""
 <style>
-    .main {
-        padding-top: 1rem;
+    /* メイン レイアウト */
+    .main { padding-top: 0.5rem; }
+    
+    /* ヘッダーアニメーション */
+    .header-animation {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 3s ease-in-out infinite;
     }
     
+    @keyframes shimmer {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+    
+    /* チャットメッセージ */
     .chat-message {
         padding: 1rem;
-        border-radius: 10px;
+        border-radius: 12px;
         margin: 0.5rem 0;
-        display: flex;
-        align-items: flex-start;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
     }
     
-    .chat-message.user {
-        background-color: #007bff;
-        color: white;
-        margin-left: 2rem;
-        flex-direction: row-reverse;
+    .chat-message:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     
-    .chat-message.assistant {
-        background-color: #f1f3f4;
-        color: #333;
-        margin-right: 2rem;
-    }
-    
-    .chat-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        margin: 0 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-    }
-    
+    /* レシピカード */
     .recipe-card {
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        background-color: #fff;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+        border: none;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .recipe-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4);
+        border-radius: 16px 16px 0 0;
+    }
+    
+    .recipe-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
     }
     
     .recipe-title {
-        font-size: 1.2rem;
-        font-weight: bold;
+        font-size: 1.3rem;
+        font-weight: 700;
         color: #2c3e50;
         margin-bottom: 0.5rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
     
     .recipe-meta {
         display: flex;
-        gap: 1rem;
-        margin: 0.5rem 0;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin: 0.8rem 0;
         font-size: 0.9rem;
-        color: #666;
+        color: #555;
     }
     
-    .rating-stars {
-        font-size: 1.5rem;
-        color: #ffc107;
-        margin: 0.5rem 0;
+    .meta-item {
+        background: rgba(116, 75, 162, 0.1);
+        padding: 0.3rem 0.6rem;
+        border-radius: 20px;
+        font-weight: 500;
     }
     
+    /* 学習バッジ */
     .learning-badge {
-        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
         color: white;
-        padding: 0.2rem 0.5rem;
-        border-radius: 15px;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
         font-size: 0.8rem;
-        font-weight: bold;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+        animation: pulse 2s infinite;
     }
     
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    /* サイドバーメトリクス */
     .sidebar-metric {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 10px;
-        margin: 0.5rem 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 1.2rem;
+        border-radius: 12px;
+        margin: 0.8rem 0;
         text-align: center;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .sidebar-metric:hover {
+        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+        transform: scale(1.02);
     }
     
     .sidebar-metric h3 {
         margin: 0;
-        font-size: 2rem;
-        color: #007bff;
+        font-size: 2.2rem;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
     }
     
     .sidebar-metric p {
-        margin: 0;
-        color: #666;
+        margin: 0.5rem 0 0 0;
+        color: #6c757d;
         font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    /* ボタンスタイル */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    /* 評価星 */
+    .rating-button {
+        background: linear-gradient(45deg, #ffc107, #ff8c00);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        margin: 0.2rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    }
+    
+    .rating-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.5);
+    }
+    
+    /* アラート改善 */
+    .stAlert {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* スピナー改善 */
+    .stSpinner {
+        text-align: center;
+    }
+    
+    /* 入力フィールド */
+    .stTextInput > div > div > input {
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1.2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -132,14 +233,9 @@ def initialize_session():
         ]
     
     if "flavia_agent" not in st.session_state:
-        with st.spinner("🧠 Flaviaを起動中..."):
-            try:
-                from src.flavia_agent.agent.personal_flavia import PersonalFlaviaAgent
-                st.session_state.flavia_agent = PersonalFlaviaAgent()
-                st.session_state.agent_initialized = True
-            except Exception as e:
-                st.session_state.agent_initialized = False
-                st.session_state.initialization_error = str(e)
+        st.session_state.flavia_agent = None
+        st.session_state.agent_initialized = False
+        st.session_state.initialization_error = None
     
     if "recipe_ratings" not in st.session_state:
         st.session_state.recipe_ratings = {}
@@ -174,12 +270,13 @@ def render_recipe_cards(recipes: List[Any]):
                 <div class="recipe-card">
                     <div class="recipe-title">🍳 {recipe.name}</div>
                     <div class="recipe-meta">
-                        <span>💰 ${recipe.estimated_cost:.2f}</span>
-                        <span>⏱️ {recipe.total_time}分</span>
-                        <span>🌍 {recipe.cuisine_type}</span>
-                        <span>👤 {recipe.servings}人分</span>
+                        <span class="meta-item">💰 ${recipe.estimated_cost:.2f}</span>
+                        <span class="meta-item">⏱️ {recipe.total_time}分</span>
+                        <span class="meta-item">🌍 {recipe.cuisine_type}</span>
+                        <span class="meta-item">👤 {recipe.servings}人分</span>
                     </div>
-                    <div><strong>材料:</strong> {', '.join(recipe.ingredients[:3])}{'...' if len(recipe.ingredients) > 3 else ''}</div>
+                    <div style="margin-top: 1rem;"><strong>材料:</strong> {', '.join(recipe.ingredients[:3])}{'...' if len(recipe.ingredients) > 3 else ''}</div>
+                    <div class="learning-badge" style="margin-top: 1rem;">AI学習型レシピ</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -285,10 +382,35 @@ async def generate_recipe_response(user_message: str) -> Dict[str, Any]:
             "content": f"申し訳ありません。エラーが発生しました: {e}\n\n別の方法で試してみてください。"
         }
 
+def initialize_agent():
+    """エージェントを初期化"""
+    if st.session_state.flavia_agent is None:
+        try:
+            from src.flavia_agent.agent.personal_flavia import PersonalFlaviaAgent
+            st.session_state.flavia_agent = PersonalFlaviaAgent()
+            st.session_state.agent_initialized = True
+            return True
+        except Exception as e:
+            st.session_state.agent_initialized = False
+            st.session_state.initialization_error = str(e)
+            return False
+    return st.session_state.agent_initialized
+
 def render_sidebar():
     """サイドバーをレンダリング"""
     with st.sidebar:
         st.title("🧠 学習ダッシュボード")
+        
+        # エージェント初期化ボタン
+        if not st.session_state.get("agent_initialized", False):
+            if st.button("🚀 Flavia起動", use_container_width=True):
+                with st.spinner("🧠 Flaviaを起動中..."):
+                    initialize_agent()
+                st.rerun()
+            
+            if st.session_state.get("initialization_error"):
+                st.error(f"初期化エラー: {st.session_state.initialization_error}")
+            return
         
         if st.session_state.get("agent_initialized"):
             try:
@@ -300,9 +422,19 @@ def render_sidebar():
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.metric("総フィードバック", dashboard["学習状況"]["総フィードバック数"])
+                    st.markdown(f"""
+                    <div class="sidebar-metric">
+                        <h3>{dashboard["学習状況"]["総フィードバック数"]}</h3>
+                        <p>総フィードバック</p>
+                    </div>
+                    """, unsafe_allow_html=True)
                 with col2:
-                    st.metric("学習項目", dashboard["学習状況"]["適応的嗜好項目数"])
+                    st.markdown(f"""
+                    <div class="sidebar-metric">
+                        <h3>{dashboard["学習状況"]["適応的嗜好項目数"]}</h3>
+                        <p>学習項目</p>
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 # 今週の傾向
                 st.subheader("📈 今週の傾向")
@@ -310,17 +442,19 @@ def render_sidebar():
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.metric(
-                        "平均評価", 
-                        f"{week_trends['平均レシピ評価']:.1f}/5.0",
-                        delta=None
-                    )
+                    st.markdown(f"""
+                    <div class="sidebar-metric">
+                        <h3>{week_trends['平均レシピ評価']:.1f}/5.0</h3>
+                        <p>平均評価</p>
+                    </div>
+                    """, unsafe_allow_html=True)
                 with col2:
-                    st.metric(
-                        "嗜好安定性",
-                        f"{week_trends['嗜好安定性']:.0%}",
-                        delta=None
-                    )
+                    st.markdown(f"""
+                    <div class="sidebar-metric">
+                        <h3>{week_trends['嗜好安定性']:.0%}</h3>
+                        <p>嗜好安定性</p>
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 # 推奨アクション
                 if dashboard["推奨アクション"]:
@@ -373,9 +507,15 @@ def main():
     # セッション初期化
     initialize_session()
     
-    # タイトル
-    st.title("🍽️ Flavia AI 料理パートナー")
-    st.markdown("**あなた専用の学習型AI料理アシスタント**")
+    # 洗練されたタイトル
+    st.markdown("""
+    <h1 class="header-animation" style="font-size: 3rem; margin-bottom: 0;">
+        🍽️ Flavia AI 料理パートナー
+    </h1>
+    <p style="font-size: 1.2rem; color: #6c757d; margin-top: 0; font-weight: 500;">
+        あなた専用の学習型AI料理アシスタント ✨
+    </p>
+    """, unsafe_allow_html=True)
     
     # サイドバー
     render_sidebar()
@@ -423,9 +563,7 @@ def main():
                         "timestamp": datetime.now().isoformat()
                     })
     else:
-        st.error("🚫 Flaviaエージェントが利用できません。アプリケーションを再起動してください。")
-        if st.button("🔄 再初期化"):
-            st.rerun()
+        st.info("👈 サイドバーの「🚀 Flavia起動」ボタンを押してエージェントを開始してください。")
 
 if __name__ == "__main__":
     main()
