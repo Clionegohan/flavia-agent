@@ -1,0 +1,42 @@
+{
+  "材料情報が不完全です": {
+    "item_name": "材料情報が不完全です",
+    "current_score": 0.03,
+    "confidence_level": 0.30000000000000004,
+    "last_updated": "2025-06-08T10:14:21.753978",
+    "update_count": 2,
+    "trend": "stable"
+  },
+  "Personal": {
+    "item_name": "Personal",
+    "current_score": 0.05,
+    "confidence_level": 0.30000000000000004,
+    "last_updated": "2025-06-08T10:14:21.754546",
+    "update_count": 2,
+    "trend": "stable"
+  },
+  "アボカド": {
+    "item_name": "アボカド",
+    "current_score": 0.16000000000000003,
+    "confidence_level": 0.2,
+    "last_updated": "2025-06-08T10:14:21.757672",
+    "update_count": 1,
+    "trend": "increasing"
+  },
+  "パクチー": {
+    "item_name": "パクチー",
+    "current_score": -0.16000000000000003,
+    "confidence_level": 0.2,
+    "last_updated": "2025-06-08T10:14:21.759080",
+    "update_count": 1,
+    "trend": "decreasing"
+  },
+  "quinoa": {
+    "item_name": "quinoa",
+    "current_score": 0.0,
+    "confidence_level": 0.2,
+    "last_updated": "2025-06-08T10:14:21.760248",
+    "update_count": 1,
+    "trend": "stable"
+  }
+}

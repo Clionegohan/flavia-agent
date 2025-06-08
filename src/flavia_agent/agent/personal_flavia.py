@@ -9,6 +9,7 @@ import structlog
 from .flavia import FlaviaAgent
 from ..rag import ContextBuilder, PreferenceParser
 from ..rag.web_sale_fetcher import WebSaleFetcher
+from ..rag.learning_system import LearningSystem
 from ..services.recipe_service import RecipeService
 from ..data.models import MealPreferences, Recipe
 from ..exceptions import RecipeGenerationError
@@ -41,18 +42,22 @@ class PersonalFlaviaAgent:
         self.sale_fetcher = WebSaleFetcher()
         self.recipe_service = RecipeService()
         
+        # 学習システム
+        self.learning_system = LearningSystem()
+        
         # 個人データを読み込み
         self._load_personal_data()
         
         self.logger.info("Personal Flavia Agent initialized successfully")
     
     def _load_personal_data(self):
-        """個人データを読み込んで解析"""
+        """個人データを読み込んで解析（学習結果反映）"""
         try:
-            self.personal_data = self.preference_parser.parse_all_preferences()
+            # 学習結果を反映した最新の嗜好データを取得
+            self.personal_data = self.learning_system.get_updated_preferences()
             
             self.logger.info(
-                "Personal data loaded",
+                "Personal data loaded with learning integration",
                 age=self.personal_data.profile.age,
                 gender=self.personal_data.profile.gender,
                 disliked_foods_count=len(self.personal_data.disliked_foods),
@@ -504,3 +509,202 @@ class PersonalFlaviaAgent:
             request += f"（{context}）"
         
         return await self.generate_personalized_meal_plan(request)
+    
+    # ===============================
+    # 学習・フィードバック機能
+    # ===============================
+    
+    def rate_recipe(
+        self, 
+        recipe_name: str, 
+        rating: int, 
+        comments: str = "",
+        recipe_context: Dict[str, Any] = None
+    ) -> str:
+        """レシピを評価してフィードバック学習
+        
+        Args:
+            recipe_name: レシピ名
+            rating: 1-5の評価（5が最高）
+            comments: コメント（オプション）
+            recipe_context: レシピ生成時のコンテキスト
+            
+        Returns:
+            フィードバックID
+        """
+        
+        self.logger.info(
+            "Recording recipe rating",
+            recipe_name=recipe_name,
+            rating=rating
+        )
+        
+        # 学習システムにフィードバックを記録
+        feedback_id = self.learning_system.record_recipe_feedback(
+            recipe_name=recipe_name,
+            rating=rating,
+            comments=comments,
+            recipe_context=recipe_context
+        )
+        
+        # 個人データの再読み込み（学習結果反映）
+        self._load_personal_data()
+        
+        return feedback_id
+    
+    def update_ingredient_preference(
+        self, 
+        ingredient: str, 
+        new_preference: str, 
+        reason: str = ""
+    ) -> str:
+        """食材の好みを更新
+        
+        Args:
+            ingredient: 食材名
+            new_preference: "like", "dislike", "neutral"
+            reason: 変更理由（オプション）
+            
+        Returns:
+            フィードバックID
+        """
+        
+        self.logger.info(
+            "Updating ingredient preference",
+            ingredient=ingredient,
+            new_preference=new_preference
+        )
+        
+        # 学習システムに嗜好変化を記録
+        feedback_id = self.learning_system.record_ingredient_preference_change(
+            ingredient=ingredient,
+            new_preference=new_preference,
+            reason=reason
+        )
+        
+        # 個人データの再読み込み
+        self._load_personal_data()
+        
+        return feedback_id
+    
+    def analyze_my_preferences(self, days: int = 30) -> Dict[str, Any]:
+        """個人の嗜好トレンドを分析
+        
+        Args:
+            days: 分析期間（日数）
+            
+        Returns:
+            嗜好分析結果
+        """
+        
+        self.logger.info(
+            "Analyzing preference trends",
+            analysis_period_days=days
+        )
+        
+        # 学習システムでトレンド分析
+        analysis = self.learning_system.analyze_preference_trends(days)
+        
+        # 現在の嗜好データと組み合わせ
+        enhanced_analysis = {
+            **analysis,
+            "current_profile": {
+                "age": self.personal_data.profile.age,
+                "location": self.personal_data.profile.location,
+                "disliked_foods": self.personal_data.disliked_foods,
+                "top_cuisines": [
+                    p.name for p in self.personal_data.cuisine_preferences 
+                    if p.rating >= 4
+                ][:3]
+            },
+            "learning_summary": self.learning_system.get_learning_summary()
+        }
+        
+        return enhanced_analysis
+    
+    def record_interaction(
+        self, 
+        interaction_type: str, 
+        details: Dict[str, Any]
+    ) -> str:
+        """ユーザーとのインタラクションを記録
+        
+        Args:
+            interaction_type: インタラクション種類
+            details: 詳細情報
+            
+        Returns:
+            インタラクションID
+        """
+        
+        self.logger.info(
+            "Recording user interaction",
+            interaction_type=interaction_type
+        )
+        
+        return self.learning_system.record_user_interaction(
+            interaction_type=interaction_type,
+            details=details
+        )
+    
+    async def get_personalized_recommendations(self) -> Dict[str, Any]:
+        """個人化された推奨事項を取得
+        
+        Returns:
+            学習ベースの推奨事項
+        """
+        
+        # 嗜好分析を実行
+        analysis = self.analyze_my_preferences(days=30)
+        
+        # 推奨レシピを生成
+        recommendations_request = "学習結果に基づいて、私にぴったりの新しいレシピを提案して"
+        
+        recommended_recipes = await self.generate_personalized_meal_plan(
+            user_request=recommendations_request
+        )
+        
+        return {
+            "preference_analysis": analysis,
+            "recommended_recipes": recommended_recipes,
+            "learning_insights": analysis["recommendations"],
+            "next_steps": [
+                "新しいレシピを試して評価をつける",
+                "嗜好の変化があれば更新する",
+                "定期的に分析結果を確認する"
+            ]
+        }
+    
+    def get_learning_dashboard(self) -> Dict[str, Any]:
+        """学習システムのダッシュボード情報を取得
+        
+        Returns:
+            学習状況のサマリー
+        """
+        
+        summary = self.learning_system.get_learning_summary()
+        recent_analysis = self.analyze_my_preferences(days=7)
+        
+        dashboard = {
+            "学習状況": {
+                "総フィードバック数": summary["total_feedbacks"],
+                "学習イベント数": summary["total_events"],
+                "適応的嗜好項目数": summary["adaptive_preferences_count"],
+                "最終フィードバック日時": summary["last_feedback"]
+            },
+            "今週の傾向": {
+                "平均レシピ評価": recent_analysis["recipe_ratings"]["average_rating"],
+                "評価済みレシピ数": recent_analysis["recipe_ratings"]["rating_count"],
+                "嗜好安定性": recent_analysis["preference_stability"]
+            },
+            "推奨アクション": recent_analysis["recommendations"],
+            "システム状態": summary["system_status"]
+        }
+        
+        self.logger.info(
+            "Learning dashboard generated",
+            total_feedbacks=summary["total_feedbacks"],
+            recent_ratings=recent_analysis["recipe_ratings"]["rating_count"]
+        )
+        
+        return dashboard
