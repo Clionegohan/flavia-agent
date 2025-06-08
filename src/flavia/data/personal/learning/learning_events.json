@@ -119,5 +119,112 @@
     "recipe_context": {},
     "feedback_data": null,
     "learning_outcome": "recorded"
+  },
+  {
+    "event_id": "learn_20250608_122339",
+    "timestamp": "2025-06-08T12:23:39.408626",
+    "event_type": "recipe_feedback",
+    "user_action": "rated_recipe_4",
+    "recipe_context": {
+      "recipe_name": "鶏の照り焼き"
+    },
+    "feedback_data": {
+      "feedback_id": "recipe_20250608_122339",
+      "timestamp": "2025-06-08T12:23:39.408330",
+      "feedback_type": "recipe_rating",
+      "content": {
+        "recipe_name": "鶏の照り焼き",
+        "rating": 4,
+        "comments": "美味しかった！"
+      },
+      "context": {
+        "ingredients": [
+          "鶏肉",
+          "醤油",
+          "みりん",
+          "砂糖"
+        ],
+        "cuisine_type": "和食"
+      },
+      "confidence": 1.0
+    },
+    "learning_outcome": "preference_updated"
+  },
+  {
+    "event_id": "learn_20250608_191710",
+    "timestamp": "2025-06-08T19:17:10.025594",
+    "event_type": "recipe_feedback",
+    "user_action": "rated_recipe_4",
+    "recipe_context": {
+      "recipe_name": "テスト料理"
+    },
+    "feedback_data": {
+      "feedback_id": "recipe_20250608_191710",
+      "timestamp": "2025-06-08T19:17:10.025187",
+      "feedback_type": "recipe_rating",
+      "content": {
+        "recipe_name": "テスト料理",
+        "rating": 4,
+        "comments": "美味しかった！"
+      },
+      "context": {
+        "ingredients": [
+          "鶏肉",
+          "野菜"
+        ],
+        "cuisine_type": "和食"
+      },
+      "confidence": 1.0
+    },
+    "learning_outcome": "preference_updated"
+  },
+  {
+    "event_id": "learn_20250608_191731",
+    "timestamp": "2025-06-08T19:17:31.673783",
+    "event_type": "recipe_feedback",
+    "user_action": "rated_recipe_5",
+    "recipe_context": {
+      "recipe_name": "統合テスト料理"
+    },
+    "feedback_data": {
+      "feedback_id": "recipe_20250608_191731",
+      "timestamp": "2025-06-08T19:17:31.673281",
+      "feedback_type": "recipe_rating",
+      "content": {
+        "recipe_name": "統合テスト料理",
+        "rating": 5,
+        "comments": "完璧！"
+      },
+      "context": {
+        "ingredients": [
+          "テスト材料"
+        ],
+        "cuisine_type": "テスト料理"
+      },
+      "confidence": 1.0
+    },
+    "learning_outcome": "preference_updated"
+  },
+  {
+    "event_id": "learn_20250608_191731",
+    "timestamp": "2025-06-08T19:17:31.681254",
+    "event_type": "recipe_feedback",
+    "user_action": "rated_recipe_3",
+    "recipe_context": {
+      "recipe_name": "永続化テスト料理"
+    },
+    "feedback_data": {
+      "feedback_id": "recipe_20250608_191731",
+      "timestamp": "2025-06-08T19:17:31.680894",
+      "feedback_type": "recipe_rating",
+      "content": {
+        "recipe_name": "永続化テスト料理",
+        "rating": 3,
+        "comments": "テスト"
+      },
+      "context": {},
+      "confidence": 1.0
+    },
+    "learning_outcome": "preference_updated"
   }
 ]
