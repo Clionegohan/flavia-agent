@@ -1,1 +1,0 @@
-# Future database schemas will be placed here
