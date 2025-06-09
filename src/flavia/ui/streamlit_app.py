@@ -27,203 +27,546 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 最適化された洗練UI CSS
+# モダンUI デザインシステム
 st.markdown("""
 <style>
-    /* メイン レイアウト */
-    .main { padding-top: 0.5rem; }
+    /* ===================
+       GLOBAL STYLES
+    =================== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     
-    /* ヘッダーアニメーション */
-    .header-animation {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        animation: shimmer 3s ease-in-out infinite;
+    .main {
+        padding-top: 1rem;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     }
     
-    @keyframes shimmer {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.8; }
+    /* カスタムプロパティ（CSS変数） */
+    :root {
+        --primary-color: #2563eb;
+        --primary-hover: #1d4ed8;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --background-primary: #ffffff;
+        --background-secondary: #f8fafc;
+        --background-tertiary: #f1f5f9;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --border-color: #e2e8f0;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --radius-xl: 16px;
     }
     
-    /* チャットメッセージ */
-    .chat-message {
-        padding: 1rem;
-        border-radius: 12px;
-        margin: 0.5rem 0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transition: transform 0.2s ease;
+    /* ===================
+       HEADER & NAVIGATION
+    =================== */
+    .main-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #3b82f6 50%, #6366f1 100%);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+        box-shadow: var(--shadow-lg);
     }
     
-    .chat-message:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    .header-content {
+        text-align: center;
+        color: white;
     }
     
-    /* レシピカード */
+    .app-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        letter-spacing: -0.025em;
+    }
+    
+    .app-subtitle {
+        font-size: 1.125rem;
+        font-weight: 400;
+        margin-top: 0.5rem;
+        opacity: 0.9;
+        letter-spacing: 0.025em;
+    }
+    
+    /* ===================
+       RECIPE CARDS
+    =================== */
     .recipe-card {
-        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
-        border: none;
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        position: relative;
+        background: var(--background-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 0;
+        margin: 1.5rem 0;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
-    }
-    
-    .recipe-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4);
-        border-radius: 16px 16px 0 0;
+        position: relative;
     }
     
     .recipe-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary-color);
+    }
+    
+    .recipe-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #3b82f6 100%);
+        padding: 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .recipe-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        transform: translate(30px, -30px);
+    }
+    
+    .recipe-day-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        padding: 0.375rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        backdrop-filter: blur(10px);
     }
     
     .recipe-title {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
         font-weight: 700;
-        color: #2c3e50;
-        margin-bottom: 0.5rem;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        margin: 0;
+        line-height: 1.2;
     }
     
-    .recipe-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.8rem;
-        margin: 0.8rem 0;
-        font-size: 0.9rem;
-        color: #555;
+    .recipe-description {
+        font-size: 0.95rem;
+        margin-top: 0.5rem;
+        opacity: 0.9;
+        line-height: 1.4;
+    }
+    
+    .recipe-body {
+        padding: 1.5rem;
+    }
+    
+    .recipe-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
     }
     
     .meta-item {
-        background: rgba(116, 75, 162, 0.1);
-        padding: 0.3rem 0.6rem;
-        border-radius: 20px;
-        font-weight: 500;
-    }
-    
-    /* 学習バッジ */
-    .learning-badge {
-        background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
-        color: white;
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-    }
-    
-    /* サイドバーメトリクス */
-    .sidebar-metric {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        padding: 1.2rem;
-        border-radius: 12px;
-        margin: 0.8rem 0;
         text-align: center;
-        border: 1px solid rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
+        padding: 0.75rem;
+        background: var(--background-secondary);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
     }
     
-    .sidebar-metric:hover {
-        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-        transform: scale(1.02);
+    .meta-item:hover {
+        background: var(--background-tertiary);
+        transform: translateY(-2px);
     }
     
-    .sidebar-metric h3 {
-        margin: 0;
-        font-size: 2.2rem;
-        background: linear-gradient(45deg, #007bff, #0056b3);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-weight: 700;
+    .meta-icon {
+        font-size: 1.125rem;
+        margin-bottom: 0.25rem;
+        display: block;
     }
     
-    .sidebar-metric p {
-        margin: 0.5rem 0 0 0;
-        color: #6c757d;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    
-    /* ボタンスタイル */
-    .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 25px;
-        padding: 0.6rem 1.5rem;
+    .meta-value {
         font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        margin: 0;
+    }
+    
+    .meta-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+    
+    /* ===================
+       RECIPE CONTENT
+    =================== */
+    .recipe-content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .recipe-content-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+    }
+    
+    .ingredients-section, .instructions-section {
+        background: var(--background-secondary);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+    }
+    
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .ingredient-list, .instruction-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .ingredient-item, .instruction-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: var(--background-primary);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        font-size: 0.875rem;
+        line-height: 1.4;
+        transition: all 0.2s ease;
+    }
+    
+    .ingredient-item:hover, .instruction-item:hover {
+        background: var(--background-tertiary);
+        transform: translateX(4px);
+    }
+    
+    .instruction-item {
+        position: relative;
+        padding-left: 2.5rem;
+    }
+    
+    .instruction-number {
+        position: absolute;
+        left: 0.75rem;
+        top: 0.75rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    /* ===================
+       NUTRITION INFO
+    =================== */
+    .nutrition-section {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+        border: 1px solid #bbf7d0;
+        border-radius: var(--radius-lg);
+    }
+    
+    .nutrition-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #065f46;
+        margin: 0 0 0.75rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .nutrition-content {
+        font-size: 0.875rem;
+        color: #047857;
+        line-height: 1.6;
+    }
+    
+    /* ===================
+       RATING SYSTEM
+    =================== */
+    .rating-section {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: var(--background-secondary);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+    }
+    
+    .rating-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 1rem 0;
+        text-align: center;
+    }
+    
+    .rating-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .stButton > button {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #3b82f6 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: var(--radius-md) !important;
+        padding: 0.75rem 1rem !important;
+        font-weight: 600 !important;
+        font-size: 0.875rem !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: var(--shadow-sm) !important;
+        min-height: unset !important;
     }
     
     .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: var(--shadow-md) !important;
+        background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-color) 100%) !important;
+    }
+    
+    /* ===================
+       SHOPPING LIST
+    =================== */
+    .shopping-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        background: var(--background-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .metric-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        box-shadow: var(--shadow-md);
     }
     
-    /* 評価星 */
-    .rating-button {
-        background: linear-gradient(45deg, #ffc107, #ff8c00);
-        border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        margin: 0.2rem;
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+    
+    .category-section {
+        background: var(--background-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .category-header {
+        background: var(--background-secondary);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .category-items {
+        padding: 1.5rem;
+    }
+    
+    .shopping-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: var(--background-secondary);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        font-size: 0.875rem;
         transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
     }
     
-    .rating-button:hover {
-        transform: scale(1.1);
-        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.5);
+    .shopping-item:hover {
+        background: var(--background-tertiary);
+        transform: translateX(4px);
     }
     
-    /* アラート改善 */
+    /* ===================
+       SIDEBAR IMPROVEMENTS
+    =================== */
+    .sidebar-metric {
+        background: var(--background-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin: 1rem 0;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .sidebar-metric:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .sidebar-metric h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+    }
+    
+    .sidebar-metric p {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin: 0.5rem 0 0 0;
+    }
+    
+    /* ===================
+       ALERTS & MESSAGES
+    =================== */
     .stAlert {
-        border-radius: 12px;
-        border: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-radius: var(--radius-lg) !important;
+        border: none !important;
+        box-shadow: var(--shadow-sm) !important;
     }
     
-    /* スピナー改善 */
+    .stSuccess {
+        background-color: #ecfdf5 !important;
+        color: #065f46 !important;
+        border-left: 4px solid var(--success-color) !important;
+    }
+    
+    .stError {
+        background-color: #fef2f2 !important;
+        color: #991b1b !important;
+        border-left: 4px solid var(--error-color) !important;
+    }
+    
+    .stWarning {
+        background-color: #fffbeb !important;
+        color: #92400e !important;
+        border-left: 4px solid var(--warning-color) !important;
+    }
+    
+    .stInfo {
+        background-color: #eff6ff !important;
+        color: #1e40af !important;
+        border-left: 4px solid var(--primary-color) !important;
+    }
+    
+    /* ===================
+       RESPONSIVE DESIGN
+    =================== */
+    @media (max-width: 768px) {
+        .app-title {
+            font-size: 2rem;
+        }
+        
+        .recipe-content-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .shopping-overview {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+        
+        .main-header {
+            padding: 1.5rem 0;
+        }
+        
+        .recipe-body {
+            padding: 1rem;
+        }
+        
+        .ingredients-section, .instructions-section {
+            padding: 1rem;
+        }
+    }
+    
+    /* ===================
+       ANIMATIONS
+    =================== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .recipe-card {
+        animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* ===================
+       LOADING STATES
+    =================== */
     .stSpinner {
         text-align: center;
     }
     
-    /* 入力フィールド */
+    /* ===================
+       INPUT IMPROVEMENTS
+    =================== */
     .stTextInput > div > div > input {
-        border-radius: 25px;
-        border: 2px solid #e9ecef;
-        padding: 0.8rem 1.2rem;
-        transition: all 0.3s ease;
+        border-radius: var(--radius-lg) !important;
+        border: 2px solid var(--border-color) !important;
+        padding: 0.75rem 1rem !important;
+        transition: all 0.3s ease !important;
+        font-size: 0.875rem !important;
     }
     
     .stTextInput > div > div > input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+        outline: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -272,89 +615,184 @@ def render_chat_message(message: Dict[str, Any]):
                 render_weekly_dinner_plan(message["dinners"], message["shopping_list"])
 
 def render_weekly_dinner_plan(dinners: List[Dict], shopping_list: Dict[str, Any]):
-    """週間夕食プランをレンダリング"""
+    """週間夕食プランをレンダリング（モダンUI版）"""
+    
+    # プラン概要をモダンデザインで表示
+    st.markdown("""
+    <div class="shopping-overview">
+    """, unsafe_allow_html=True)
+    
+    total_cost = sum(dinner.get('estimated_cost', 0) for dinner in dinners)
+    total_ingredients = shopping_list.get('total_unique_ingredients', 0)
+    avg_time = sum(dinner.get('detailed_recipe', {}).get('prep_time', 15) + 
+                   dinner.get('detailed_recipe', {}).get('cook_time', 30) for dinner in dinners) // len(dinners)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">¥{total_cost:.0f}</div>
+            <div class="metric-label">総予算</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">{total_ingredients}</div>
+            <div class="metric-label">食材種類</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">{avg_time}</div>
+            <div class="metric-label">平均調理時間(分)</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">{len(dinners)}</div>
+            <div class="metric-label">メニュー数</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
     
     # タブで整理
-    tab1, tab2 = st.tabs(["📅 夕食メニュー", "🛒 買い物リスト"])
+    tab1, tab2 = st.tabs(["🍽️ 夕食メニュー", "🛒 買い物リスト"])
     
     with tab1:
-        st.subheader("🍽️ 夕食メニュー詳細")
-        
         for i, dinner in enumerate(dinners):
-            with st.expander(f"**Day {dinner['day']} ({dinner['date']})** - {dinner['main_dish']}", expanded=(i==0)):
-                col1, col2 = st.columns([2, 1])
+            # シンプルで見やすいレシピカード
+            with st.container():
+                st.markdown(f"## 🍳 Day {dinner['day']} ({dinner['date']})")
+                st.markdown(f"### {dinner['main_dish']}")
+                st.write(dinner.get('description', ''))
                 
-                with col1:
-                    st.markdown(f"""
-                    <div class="recipe-card">
-                        <div class="recipe-title">🍳 {dinner['main_dish']}</div>
-                        <p><strong>説明:</strong> {dinner.get('description', '')}</p>
-                        
-                        <div class="recipe-meta">
-                            <span class="meta-item">💰 ${dinner.get('estimated_cost', 0):.2f}</span>
-                            <span class="meta-item">⏱️ 準備{dinner.get('detailed_recipe', {}).get('prep_time', 15)}分</span>
-                            <span class="meta-item">🔥 調理{dinner.get('detailed_recipe', {}).get('cook_time', 30)}分</span>
-                            <span class="meta-item">👤 {dinner.get('detailed_recipe', {}).get('servings', 2)}人分</span>
-                            <span class="meta-item">📊 {dinner.get('cooking_difficulty', '普通')}</span>
-                        </div>
-                        
-                        <div style="margin-top: 1rem;">
-                            <strong>🥬 材料:</strong><br>
-                            {'<br>'.join(f"• {ing}" for ing in dinner.get('ingredients', []))}
-                        </div>
-                        
-                        <div style="margin-top: 1rem;">
-                            <strong>📋 作り方:</strong><br>
-                            {'<br>'.join(f"{idx+1}. {step}" for idx, step in enumerate(dinner.get('detailed_recipe', {}).get('instructions', [])))}
-                        </div>
-                        
-                        <div style="margin-top: 1rem;">
-                            <strong>🍎 栄養情報:</strong> {dinner.get('nutrition_info', '情報なし')}
-                        </div>
-                        
-                        <div class="learning-badge" style="margin-top: 1rem;">AI学習型レシピ</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                # メタ情報をシンプルに表示
+                meta_col1, meta_col2, meta_col3, meta_col4, meta_col5 = st.columns(5)
                 
-                with col2:
-                    st.markdown("**このレシピを評価:**")
-                    rating_key = f"dinner_rating_{dinner['day']}_{i}"
-                    
-                    # 星評価ボタン
-                    cols = st.columns(5)
-                    for star in range(1, 6):
-                        if cols[star-1].button(f"{'⭐' * star}", key=f"{rating_key}_{star}"):
-                            # 夕食レシピの評価を記録
-                            rate_dinner_recipe(dinner, star)
-                            st.rerun()
+                with meta_col1:
+                    st.metric("💰 コスト", f"¥{dinner.get('estimated_cost', 0):.0f}")
+                
+                with meta_col2:
+                    prep_time = dinner.get('detailed_recipe', {}).get('prep_time', 15)
+                    st.metric("⏱️ 準備", f"{prep_time}分")
+                
+                with meta_col3:
+                    cook_time = dinner.get('detailed_recipe', {}).get('cook_time', 30)
+                    st.metric("🔥 調理", f"{cook_time}分")
+                
+                with meta_col4:
+                    servings = dinner.get('detailed_recipe', {}).get('servings', 2)
+                    st.metric("👥 分量", f"{servings}人分")
+                
+                with meta_col5:
+                    difficulty = dinner.get('cooking_difficulty', '普通')
+                    difficulty_emoji = {"簡単": "🟢", "普通": "🟡", "難しい": "🔴"}.get(difficulty, "🟡")
+                    st.metric(f"{difficulty_emoji} 難易度", difficulty)
+            
+            # シンプルで見やすい材料と作り方
+            recipe_col1, recipe_col2 = st.columns(2)
+            
+            with recipe_col1:
+                st.subheader("🥬 材料")
+                ingredients = dinner.get('ingredients', [])
+                for ingredient in ingredients:
+                    st.write(f"• {ingredient}")
+            
+            with recipe_col2:
+                st.subheader("📋 作り方")
+                instructions = dinner.get('detailed_recipe', {}).get('instructions', [])
+                for j, step in enumerate(instructions, 1):
+                    st.write(f"{j}. {step}")
+            
+            st.divider()
+            
+            # 栄養情報をシンプルに表示
+            nutrition = dinner.get('nutrition_info', '情報なし')
+            if nutrition != '情報なし':
+                st.subheader("🍎 栄養情報")
+                st.info(nutrition)
+            
+            # 評価セクションをシンプルに表示
+            st.subheader("⭐ このレシピを評価してください")
+            rating_key = f"dinner_rating_{dinner['day']}_{i}"
+            rating_cols = st.columns(5)
+            for star in range(1, 6):
+                with rating_cols[star-1]:
+                    if st.button(f"{'⭐' * star}", key=f"{rating_key}_{star}", use_container_width=True):
+                        rate_dinner_recipe(dinner, star)
+                        st.rerun()
+                
+                st.markdown("---")  # レシピの区切り
     
     with tab2:
-        st.subheader("🛒 統合買い物リスト")
+        # 買い物リスト概要
+        st.markdown("""
+        <div class="shopping-overview">
+        """, unsafe_allow_html=True)
         
-        # サマリー情報
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("総食材数", shopping_list.get('total_unique_ingredients', 0))
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-value">{shopping_list.get('total_unique_ingredients', 0)}</div>
+                <div class="metric-label">総食材数</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
         with col2:
-            st.metric("予算総額", f"${shopping_list.get('total_estimated_cost', 0):.2f}")
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-value">¥{shopping_list.get('total_estimated_cost', 0):.0f}</div>
+                <div class="metric-label">予算総額</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
         with col3:
-            st.metric("買い物時間", shopping_list.get('estimated_shopping_time', '30-45分'))
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-value">{shopping_list.get('estimated_shopping_time', '30-45分')}</div>
+                <div class="metric-label">買い物時間</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
         
         # カテゴリ別買い物リスト
-        st.markdown("### 📝 カテゴリ別買い物リスト")
-        
         categories = shopping_list.get('ingredients_by_category', {})
         for category, items in categories.items():
             if items:  # アイテムがある場合のみ表示
-                with st.expander(f"**{category}** ({len(items)}品目)"):
-                    for item in items:
-                        st.markdown(f"• {item}")
+                st.markdown(f"""
+                <div class="category-section">
+                    <div class="category-header">
+                        <span>{category}</span>
+                        <span>{len(items)}品目</span>
+                    </div>
+                    <div class="category-items">
+                """, unsafe_allow_html=True)
+                
+                for item in items:
+                    st.markdown(f'<div class="shopping-item">{item}</div>', unsafe_allow_html=True)
+                
+                st.markdown("</div></div>", unsafe_allow_html=True)
         
         # 買い物のコツ
-        st.markdown("### 💡 買い物のコツ")
         notes = shopping_list.get('shopping_notes', [])
-        for note in notes:
-            st.info(note)
+        if notes:
+            st.markdown("""
+            <div style="margin-top: 2rem;">
+                <h3 style="color: var(--text-primary); margin-bottom: 1rem;">💡 買い物のコツ</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            for note in notes:
+                st.info(note)
 
 def render_recipe_cards(recipes: List[Any]):
     """レシピカードをレンダリング（従来版）"""
@@ -367,7 +805,7 @@ def render_recipe_cards(recipes: List[Any]):
                 <div class="recipe-card">
                     <div class="recipe-title">🍳 {recipe.name}</div>
                     <div class="recipe-meta">
-                        <span class="meta-item">💰 ${recipe.estimated_cost:.2f}</span>
+                        <span class="meta-item">💰 ¥{recipe.estimated_cost:.0f}</span>
                         <span class="meta-item">⏱️ {recipe.total_time}分</span>
                         <span class="meta-item">🌍 {recipe.cuisine_type}</span>
                         <span class="meta-item">👤 {recipe.servings}人分</span>
@@ -378,15 +816,16 @@ def render_recipe_cards(recipes: List[Any]):
                 """, unsafe_allow_html=True)
             
             with col2:
-                st.markdown("**このレシピを評価:**")
+                st.markdown("### ⭐ このレシピを評価")
                 rating_key = f"rating_{recipe.name}_{i}"
                 
                 # 星評価ボタン
-                cols = st.columns(5)
+                rating_cols = st.columns(5)
                 for star in range(1, 6):
-                    if cols[star-1].button(f"{'⭐' * star}", key=f"{rating_key}_{star}"):
-                        rate_recipe(recipe, star)
-                        st.rerun()
+                    with rating_cols[star-1]:
+                        if st.button(f"{'⭐' * star}", key=f"{rating_key}_{star}", use_container_width=True):
+                            rate_recipe(recipe, star)
+                            st.rerun()
 
 def rate_recipe(recipe: Any, rating: int):
     """レシピを評価"""
@@ -480,6 +919,35 @@ async def generate_weekly_dinner_response(days: int = 7, user_message: str = "")
     try:
         agent = st.session_state.flavia_agent
         
+        # 動的思考過程表示
+        thinking_placeholder = st.empty()
+        progress_placeholder = st.empty()
+        
+        debug_messages = []
+        
+        def debug_callback(message: str):
+            """AIの思考過程を動的表示"""
+            debug_messages.append(f"⏰ {datetime.now().strftime('%H:%M:%S')} - {message}")
+            
+            # 動的更新（現在の思考のみ表示）
+            with thinking_placeholder.container():
+                st.markdown("### 🧠 AI思考中...")
+                # 最新のメッセージを大きく表示
+                if debug_messages:
+                    latest_msg = debug_messages[-1]
+                    st.markdown(f"**{latest_msg}**")
+                
+                # 最新3件の履歴を小さく表示
+                if len(debug_messages) > 1:
+                    st.markdown("**直前の思考:**")
+                    for msg in debug_messages[-4:-1]:  # 最新を除く3件
+                        st.markdown(f"<small>✓ {msg}</small>", unsafe_allow_html=True)
+            
+            # プログレスバー更新
+            with progress_placeholder.container():
+                progress = min(len(debug_messages) * 5, 100)
+                st.progress(progress / 100, text=f"思考進行中... ({len(debug_messages)}/20 ステップ)")
+        
         # ユーザーインタラクションを記録
         agent.record_interaction(
             interaction_type="weekly_dinner_request",
@@ -491,21 +959,112 @@ async def generate_weekly_dinner_response(days: int = 7, user_message: str = "")
             }
         )
         
-        # 週間夕食プラン生成
+        # 週間夕食プラン生成（デバッグコールバック付き）
         result = await agent.generate_weekly_dinner_plan(
             days=days,
             user_request=user_message,
             include_sale_info=True,
-            sale_url="cache"
+            sale_url="cache",
+            debug_callback=debug_callback
         )
         
         dinners = result.get("dinners", [])
         shopping_list = result.get("shopping_list", {})
         
+        # 思考過程表示をクリア
+        thinking_placeholder.empty()
+        progress_placeholder.empty()
+        
+        # 完了メッセージを簡潔に表示
+        st.success(f"✅ {days}日分の夕食プラン生成完了！")
+        
+        # AI思考プロセス詳細（折りたたまれた状態）
+        with st.expander("🔍 AI思考プロセス詳細（クリックで展開）"):
+            for msg in debug_messages:
+                st.markdown(f"<small>{msg}</small>", unsafe_allow_html=True)
+        
+        # 生成されたレシピのデバッグ情報
+        with st.expander("🧪 レシピデバッグ情報"):
+            st.write("### 生成結果詳細")
+            st.write(f"**Success**: {result.get('success')}")
+            st.write(f"**Fallback Used**: {result.get('fallback', False)}")
+            st.write(f"**Error Details**: {result.get('error_details', 'なし')}")
+            st.write(f"**Total Cost**: ¥{result.get('total_estimated_cost', 0):.0f}")
+            
+            if dinners:
+                st.write("### 生成されたレシピ")
+                try:
+                    for i, dinner in enumerate(dinners):
+                        st.write(f"**Day {i+1}**: {dinner.get('main_dish', 'Unknown')}")
+                        
+                        # 説明の安全な表示
+                        description = dinner.get('description', 'No description')
+                        if description and len(description) > 100:
+                            st.write(f"説明: {description[:100]}...")
+                        else:
+                            st.write(f"説明: {description}")
+                        
+                        # フォールバック判定（改良版）
+                        try:
+                            fallback_patterns = [
+                                ('鶏の照り焼き丼', '美味しい鶏の照り焼き丼です'),
+                                ('鮭のムニエル', '美味しい鮭のムニエルです'),  
+                                ('豚の生姜焼き', '美味しい豚の生姜焼きです'),
+                                ('オムライス', '美味しいオムライスです'),
+                                ('カレーライス', '美味しいカレーライスです'),
+                                ('ハンバーグ', '美味しいハンバーグです'),
+                                ('麻婆豆腐', '美味しい麻婆豆腐です')
+                            ]
+                            
+                            main_dish = dinner.get('main_dish', '')
+                            
+                            # 実際のフォールバック判定基準
+                            is_fallback = False
+                            
+                            # 1. result.get('fallback') をチェック
+                            if result.get('fallback', False):
+                                is_fallback = True
+                            
+                            # 2. パターンマッチング（料理名 + 説明の組み合わせ）
+                            elif main_dish:
+                                for fallback_dish, fallback_desc in fallback_patterns:
+                                    if (fallback_dish == main_dish and 
+                                        fallback_desc in description):
+                                        is_fallback = True
+                                        break
+                            
+                            if is_fallback:
+                                st.warning(f"⚠️ Day {i+1} はフォールバック応答です")
+                            else:
+                                st.success(f"✅ Day {i+1} は実際のClaude生成レシピです")
+                                
+                        except Exception as fallback_error:
+                            st.error(f"Day {i+1} フォールバック判定エラー: {fallback_error}")
+                            
+                        # レシピ品質の詳細表示
+                        ingredients_count = len(dinner.get('ingredients', []))
+                        instructions_count = len(dinner.get('detailed_recipe', {}).get('instructions', []))
+                        
+                        if ingredients_count > 5 and instructions_count > 3:
+                            st.info(f"📊 詳細レシピ: 材料{ingredients_count}種類、手順{instructions_count}ステップ")
+                        else:
+                            st.warning(f"📊 簡易レシピ: 材料{ingredients_count}種類、手順{instructions_count}ステップ")
+                            
+                except Exception as dinner_error:
+                    st.error(f"レシピ表示エラー: {dinner_error}")
+                    st.write("Raw dinner data:")
+                    st.write(dinners)
+            else:
+                st.error("レシピが生成されませんでした")
+        
+        # Raw Data表示
+        with st.expander("📋 Raw Data"):
+            st.json(result)
+        
         # レスポンス生成
         if dinners:
             response = f"🍽️ **{days}日分の夕食プラン**を作成しました！\n\n"
-            response += f"💰 **総予算**: ${result.get('total_estimated_cost', 0):.2f}\n"
+            response += f"💰 **総予算**: ¥{result.get('total_estimated_cost', 0):.0f}\n"
             response += f"🛒 **買い物リスト**: {shopping_list.get('total_unique_ingredients', 0)}種類の食材\n\n"
             
             if result.get("sale_integration"):
@@ -709,14 +1268,14 @@ def main():
     # セッション初期化
     initialize_session()
     
-    # 洗練されたタイトル
+    # モダンヘッダー
     st.markdown("""
-    <h1 class="header-animation" style="font-size: 3rem; margin-bottom: 0;">
-        🍽️ Flavia AI 料理パートナー
-    </h1>
-    <p style="font-size: 1.2rem; color: #6c757d; margin-top: 0; font-weight: 500;">
-        あなた専用の学習型AI料理アシスタント ✨
-    </p>
+    <div class="main-header">
+        <div class="header-content">
+            <h1 class="app-title">🍽️ Flavia AI 料理パートナー</h1>
+            <p class="app-subtitle">あなた専用の学習型AI料理アシスタント ✨</p>
+        </div>
+    </div>
     """, unsafe_allow_html=True)
     
     # サイドバー
