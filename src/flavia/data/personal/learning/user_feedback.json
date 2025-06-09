@@ -163,5 +163,167 @@
     },
     "context": {},
     "confidence": 1.0
+  },
+  {
+    "feedback_id": "recipe_20250609_010901",
+    "timestamp": "2025-06-09T01:09:01.937436",
+    "feedback_type": "recipe_rating",
+    "content": {
+      "recipe_name": "鶏肉と茄子の甘辛みそ炒め",
+      "rating": 5,
+      "comments": "夕食プランDay1から5つ星評価"
+    },
+    "context": {
+      "ingredients": [
+        "鶏もも肉 300g",
+        "茄子 2本",
+        "玉ねぎ 1個",
+        "ピーマン 2個",
+        "味噌 大さじ2",
+        "砂糖 大さじ1",
+        "みりん 大さじ2",
+        "酒 大さじ1",
+        "サラダ油 適量"
+      ],
+      "main_dish": "鶏肉と茄子の甘辛みそ炒め",
+      "cost": 800,
+      "cooking_difficulty": "簡単",
+      "day": 1,
+      "date": "2024-01-15"
+    },
+    "confidence": 1.0
+  },
+  {
+    "feedback_id": "recipe_20250609_010903",
+    "timestamp": "2025-06-09T01:09:03.112495",
+    "feedback_type": "recipe_rating",
+    "content": {
+      "recipe_name": "鶏肉と茄子の甘辛みそ炒め",
+      "rating": 5,
+      "comments": "夕食プランDay1から5つ星評価"
+    },
+    "context": {
+      "ingredients": [
+        "鶏もも肉 300g",
+        "茄子 2本",
+        "玉ねぎ 1個",
+        "ピーマン 2個",
+        "味噌 大さじ2",
+        "砂糖 大さじ1",
+        "みりん 大さじ2",
+        "酒 大さじ1",
+        "サラダ油 適量"
+      ],
+      "main_dish": "鶏肉と茄子の甘辛みそ炒め",
+      "cost": 800,
+      "cooking_difficulty": "簡単",
+      "day": 1,
+      "date": "2024-01-15"
+    },
+    "confidence": 1.0
+  },
+  {
+    "feedback_id": "recipe_20250609_010904",
+    "timestamp": "2025-06-09T01:09:04.253532",
+    "feedback_type": "recipe_rating",
+    "content": {
+      "recipe_name": "鶏肉と茄子の甘辛みそ炒め",
+      "rating": 5,
+      "comments": "夕食プランDay1から5つ星評価"
+    },
+    "context": {
+      "ingredients": [
+        "鶏もも肉 300g",
+        "茄子 2本",
+        "玉ねぎ 1個",
+        "ピーマン 2個",
+        "味噌 大さじ2",
+        "砂糖 大さじ1",
+        "みりん 大さじ2",
+        "酒 大さじ1",
+        "サラダ油 適量"
+      ],
+      "main_dish": "鶏肉と茄子の甘辛みそ炒め",
+      "cost": 800,
+      "cooking_difficulty": "簡単",
+      "day": 1,
+      "date": "2024-01-15"
+    },
+    "confidence": 1.0
+  },
+  {
+    "feedback_id": "recipe_20250609_010904",
+    "timestamp": "2025-06-09T01:09:04.968593",
+    "feedback_type": "recipe_rating",
+    "content": {
+      "recipe_name": "鶏肉と茄子の甘辛みそ炒め",
+      "rating": 5,
+      "comments": "夕食プランDay1から5つ星評価"
+    },
+    "context": {
+      "ingredients": [
+        "鶏もも肉 300g",
+        "茄子 2本",
+        "玉ねぎ 1個",
+        "ピーマン 2個",
+        "味噌 大さじ2",
+        "砂糖 大さじ1",
+        "みりん 大さじ2",
+        "酒 大さじ1",
+        "サラダ油 適量"
+      ],
+      "main_dish": "鶏肉と茄子の甘辛みそ炒め",
+      "cost": 800,
+      "cooking_difficulty": "簡単",
+      "day": 1,
+      "date": "2024-01-15"
+    },
+    "confidence": 1.0
+  },
+  {
+    "feedback_id": "recipe_20250609_012223",
+    "timestamp": "2025-06-09T01:22:23.080815",
+    "feedback_type": "recipe_rating",
+    "content": {
+      "recipe_name": "麻婆豆腐",
+      "rating": 3,
+      "comments": "夕食プランDay7から3つ星評価"
+    },
+    "context": {
+      "ingredients": [
+        "メイン食材",
+        "調味料",
+        "野菜"
+      ],
+      "main_dish": "麻婆豆腐",
+      "cost": 17.0,
+      "cooking_difficulty": "普通",
+      "day": 7,
+      "date": "2025-06-15"
+    },
+    "confidence": 1.0
+  },
+  {
+    "feedback_id": "recipe_20250609_012226",
+    "timestamp": "2025-06-09T01:22:26.710826",
+    "feedback_type": "recipe_rating",
+    "content": {
+      "recipe_name": "ハンバーグ",
+      "rating": 3,
+      "comments": "夕食プランDay6から3つ星評価"
+    },
+    "context": {
+      "ingredients": [
+        "メイン食材",
+        "調味料",
+        "野菜"
+      ],
+      "main_dish": "ハンバーグ",
+      "cost": 15.5,
+      "cooking_difficulty": "普通",
+      "day": 6,
+      "date": "2025-06-14"
+    },
+    "confidence": 1.0
   }
 ]

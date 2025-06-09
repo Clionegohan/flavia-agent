@@ -90,9 +90,9 @@
   "野菜": {
     "item_name": "野菜",
     "current_score": 0.03,
-    "confidence_level": 0.2,
-    "last_updated": "2025-06-08T19:17:10.026117",
-    "update_count": 1,
+    "confidence_level": 0.4,
+    "last_updated": "2025-06-09T01:22:26.715517",
+    "update_count": 3,
     "trend": "stable"
   },
   "テスト食材": {
@@ -117,6 +117,94 @@
     "confidence_level": 0.2,
     "last_updated": "2025-06-08T19:17:31.674685",
     "update_count": 1,
+    "trend": "stable"
+  },
+  "鶏もも肉 300g": {
+    "item_name": "鶏もも肉 300g",
+    "current_score": 0.24,
+    "confidence_level": 0.5,
+    "last_updated": "2025-06-09T01:09:04.971419",
+    "update_count": 4,
+    "trend": "stable"
+  },
+  "茄子 2本": {
+    "item_name": "茄子 2本",
+    "current_score": 0.24,
+    "confidence_level": 0.5,
+    "last_updated": "2025-06-09T01:09:04.971921",
+    "update_count": 4,
+    "trend": "stable"
+  },
+  "玉ねぎ 1個": {
+    "item_name": "玉ねぎ 1個",
+    "current_score": 0.24,
+    "confidence_level": 0.5,
+    "last_updated": "2025-06-09T01:09:04.972554",
+    "update_count": 4,
+    "trend": "stable"
+  },
+  "ピーマン 2個": {
+    "item_name": "ピーマン 2個",
+    "current_score": 0.24,
+    "confidence_level": 0.5,
+    "last_updated": "2025-06-09T01:09:04.973539",
+    "update_count": 4,
+    "trend": "stable"
+  },
+  "味噌 大さじ2": {
+    "item_name": "味噌 大さじ2",
+    "current_score": 0.24,
+    "confidence_level": 0.5,
+    "last_updated": "2025-06-09T01:09:04.974795",
+    "update_count": 4,
+    "trend": "stable"
+  },
+  "砂糖 大さじ1": {
+    "item_name": "砂糖 大さじ1",
+    "current_score": 0.24,
+    "confidence_level": 0.5,
+    "last_updated": "2025-06-09T01:09:04.975684",
+    "update_count": 4,
+    "trend": "stable"
+  },
+  "みりん 大さじ2": {
+    "item_name": "みりん 大さじ2",
+    "current_score": 0.24,
+    "confidence_level": 0.5,
+    "last_updated": "2025-06-09T01:09:04.976510",
+    "update_count": 4,
+    "trend": "stable"
+  },
+  "酒 大さじ1": {
+    "item_name": "酒 大さじ1",
+    "current_score": 0.24,
+    "confidence_level": 0.5,
+    "last_updated": "2025-06-09T01:09:04.977084",
+    "update_count": 4,
+    "trend": "stable"
+  },
+  "サラダ油 適量": {
+    "item_name": "サラダ油 適量",
+    "current_score": 0.24,
+    "confidence_level": 0.5,
+    "last_updated": "2025-06-09T01:09:04.977689",
+    "update_count": 4,
+    "trend": "stable"
+  },
+  "メイン食材": {
+    "item_name": "メイン食材",
+    "current_score": 0.0,
+    "confidence_level": 0.30000000000000004,
+    "last_updated": "2025-06-09T01:22:26.714468",
+    "update_count": 2,
+    "trend": "stable"
+  },
+  "調味料": {
+    "item_name": "調味料",
+    "current_score": 0.0,
+    "confidence_level": 0.30000000000000004,
+    "last_updated": "2025-06-09T01:22:26.715027",
+    "update_count": 2,
     "trend": "stable"
   }
 }
