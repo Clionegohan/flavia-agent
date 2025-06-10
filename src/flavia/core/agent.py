@@ -81,8 +81,8 @@ class FlaviaAgent:
             # JSON解析
             dinner_data = self._parse_json_response(response)
             
-            # 買い物リスト生成
-            shopping_list = self._generate_shopping_list(dinner_data.get("dinners", []))
+            # 買い物リスト（Claude AIから直接取得）
+            shopping_list = dinner_data.get("shopping_list", {})
             
             if debug_callback:
                 debug_callback("✅ 週間献立生成完了！")
@@ -106,6 +106,7 @@ class FlaviaAgent:
         """レシピ生成用プロンプト"""
         return f"""
 あなたは個人化AI料理パートナーFlaviaです。
+栄養学と料理の専門知識を持ち、ユーザーの好みや制約に合わせた実用的なレシピを提案することが得意です。
 以下の個人情報を考慮して、実用的なレシピを提案してください。
 
 ## ユーザーリクエスト
@@ -139,36 +140,25 @@ class FlaviaAgent:
         random.seed(int(time.time() * 1000) % 10000)
         chaos_hash = hashlib.md5(f"{time.time()}_{user_request}_{days}".encode()).hexdigest()[:8]
         
-        # 動的な出力例を生成
+        # フォーマット例（抽象的）
         today = datetime.now()
-        dinner_examples = []
+        cost_range = f"{random.randint(500, 800)}-{random.randint(1200, 1800)}"
         
-        for i in range(min(days, 2)):  # 最大2例まで表示
-            date = (today + timedelta(days=i)).strftime("%Y-%m-%d")
-            cost = random.randint(600, 1500)
-            prep_time = random.randint(10, 20)
-            cook_time = random.randint(15, 35)
-            
-            dinner_examples.append(f'''    {{
-      "day": {i+1},
-      "date": "{date}",
-      "main_dish": "料理名{i+1}",
-      "description": "料理の説明",
-      "ingredients": ["材料1", "材料2"],
+        examples_text = f'''    {{
+      "day": 1,
+      "date": "{today.strftime("%Y-%m-%d")}",
+      "main_dish": "メイン料理名",
+      "description": "料理の簡潔な説明",
+      "ingredients": ["食材名 数量 単位", "食材名 数量 単位"],
       "detailed_recipe": {{
-        "prep_time": {prep_time},
-        "cook_time": {cook_time},
-        "instructions": ["手順1", "手順2"]
+        "prep_time": 準備時間（分）,
+        "cook_time": 調理時間（分）,
+        "instructions": ["手順1", "手順2", "手順3"]
       }},
-      "estimated_cost": {cost},
-      "difficulty": "普通"
-    }}''')
-        
-        # 残りの日数がある場合は省略表示
-        if days > 2:
-            dinner_examples.append("    ... (以下同様の形式で全日分)")
-        
-        examples_text = ",\n".join(dinner_examples)
+      "estimated_cost": 予想費用,
+      "difficulty": "簡単/普通/難しい"
+    }},
+    ... ({days}日分すべて異なるジャンル・調理法で作成)'''
         
         return f"""
 あなたは個人化AI料理パートナーFlaviaです。
@@ -179,24 +169,43 @@ class FlaviaAgent:
 - 各日異なる料理ジャンル（和洋中、エスニック等）
 - 実用的で現実的なレシピ
 
-## 多様性確保 - ID: {chaos_hash}
-- 【必須】毎日異なる料理ジャンル
-- 【必須】創造的で実用的なメニュー
+## 多様性確保ガイドライン - ID: {chaos_hash}
+- 【必須】3日連続で同じ料理ジャンルにはしない（和食、中華、洋食、イタリアン、韓国料理、タイ料理など）
+- 【必須】連続で同じ調理法にはしない（炒める、煮る、焼く、蒸す、揚げる）
+- 【必須】主菜のバリエーション（肉料理、魚料理、野菜料理をバランス良く）
+- 避けるべき：同じような味付け、同じような食材の組み合わせ
+- 推奨：季節感、色彩豊かな組み合わせ、食感のバリエーション
 
 ## ユーザーリクエスト
 {user_request or "栄養バランスの良い美味しい夕食"}
 
 {personal_context}
 
+## 材料記載の必須ルール
+- **材料は必ず「食材名 数量 単位」の形式で記載**
+- 例：「玉ねぎ 2個」「豚肉 300g」「醤油 大さじ2」
+- 数量が不明な場合も「玉ねぎ 1個」「キャベツ 1/4個」のように推定値を記載
+- 「適量」「お好みで」は避けて具体的な分量を記載
+
 ## 出力形式（必須JSON）
 {{
   "dinners": [
 {examples_text}
-  ]
+  ],
+  "shopping_list": {{
+    "vegetables": ["玉ねぎ 2個", "にんじん 1本", "キャベツ 1/4個"],
+    "meat_fish": ["豚肉 300g", "鮭 2切れ"],
+    "dairy": ["牛乳 200ml"],
+    "canned_condiments": ["ホールトマト缶 1缶"],
+    "other": ["スパゲッティ 200g"]
+  }}
 }}
 
 **重要**: 
 - 必ず{days}日分すべての献立を作成してください
+- 材料は必ず「食材名 数量 単位」形式で記載してください
+- 買い物リストは野菜→肉魚→乳製品→缶詰調味料→その他の順で整理してください
+- 常備品（醤油、塩、胡椒、油等）は買い物リストに含めないでください
 - 絶対にJSON形式のみで回答してください
 - 日付は{today.strftime("%Y-%m-%d")}から開始してください
 """
