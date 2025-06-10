@@ -1,18 +1,16 @@
 """
-Flavia AI - 学習型料理パートナー
+Flavia AI - シンプル料理パートナー
 
-パーソナライズされた料理提案とレシピ生成のためのAIエージェント
+個人化されたAI料理アシスタント
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __author__ = "Flavia Development Team"
 
-from .core.agents.personal import PersonalAgent
-from .core.models.recipe import Recipe
-from .core.models.preferences import MealPreferences
+from .core.agent import FlaviaAgent
+from .core.data_manager import PersonalDataManager
 
 __all__ = [
-    "PersonalAgent",
-    "Recipe", 
-    "MealPreferences",
+    "FlaviaAgent",
+    "PersonalDataManager",
 ]

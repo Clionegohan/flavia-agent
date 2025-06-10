@@ -1,17 +1,11 @@
 """
-Flavia Core - コア機能モジュール
-
-エージェント、モデル、サービスのコア実装
+Flavia Core - シンプルコア機能モジュール
 """
 
-from .agents.personal import PersonalAgent
-from .models.recipe import Recipe
-from .models.preferences import MealPreferences
-from .services.recipe_service import RecipeService
+from .agent import FlaviaAgent
+from .data_manager import PersonalDataManager
 
 __all__ = [
-    "PersonalAgent",
-    "Recipe",
-    "MealPreferences", 
-    "RecipeService",
+    "FlaviaAgent",
+    "PersonalDataManager",
 ]
