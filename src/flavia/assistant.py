@@ -1,4 +1,4 @@
-"""シンプルなFlavia AI料理エージェント"""
+"""Flavia AI料理プロンプトアシスタント"""
 
 import json
 import os
@@ -17,7 +17,7 @@ load_dotenv()
 
 
 class FlaviaAgent:
-    """シンプルなAI料理エージェント"""
+    """個人化AI料理プロンプトアシスタント"""
     
     def __init__(self):
         self.api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -261,99 +261,6 @@ class FlaviaAgent:
         
         return base_result
     
-    def _generate_shopping_list(self, dinners: List[Dict]) -> Dict[str, Any]:
-        """買い物リスト生成（同じ食材をまとめて表示）"""
-        pantry = data_manager.get_pantry_items()
-        pantry_items = set()
-        
-        # 常備品をセットに追加
-        for category in pantry.values():
-            pantry_items.update(item.lower() for item in category)
-        
-        # 材料を収集
-        all_ingredients = []
-        for dinner in dinners:
-            all_ingredients.extend(dinner.get("ingredients", []))
-        
-        # 常備品以外をフィルタリング
-        shopping_ingredients = []
-        for ingredient in all_ingredients:
-            ingredient_clean = ingredient.split()[0].lower()
-            if not any(pantry_item in ingredient_clean for pantry_item in pantry_items):
-                shopping_ingredients.append(ingredient)
-        
-        # 同じ食材をまとめる
-        grouped_items = self._group_same_ingredients(shopping_ingredients)
-        
-        return {
-            "items": grouped_items,
-            "total_items": len(grouped_items),
-            "excluded_pantry_items": len(all_ingredients) - len(shopping_ingredients),
-            "notes": "常備調味料は除外済み・同じ食材はまとめて表示"
-        }
-    
-    def _group_same_ingredients(self, ingredients: List[str]) -> List[str]:
-        """同じ食材をまとめる"""
-        from collections import defaultdict
-        import re
-        
-        # 食材ごとにグループ化
-        ingredient_groups = defaultdict(list)
-        
-        for ingredient in ingredients:
-            # 食材名を抽出（最初の単語）
-            base_name = ingredient.split()[0]
-            
-            # 数字と単位を抽出
-            quantity_match = re.search(r'(\d+(?:\.\d+)?)\s*([^0-9\s]*)', ingredient)
-            if quantity_match:
-                quantity = quantity_match.group(1)
-                unit = quantity_match.group(2)
-                ingredient_groups[base_name].append((float(quantity), unit, ingredient))
-            else:
-                # 数量が明確でない場合はそのまま
-                ingredient_groups[base_name].append((0, "", ingredient))
-        
-        # まとめた結果を生成
-        grouped_results = []
-        for base_name, items in ingredient_groups.items():
-            if len(items) == 1:
-                # 1つだけの場合はそのまま
-                grouped_results.append(items[0][2])
-            else:
-                # 複数ある場合はまとめる
-                total_quantity = 0
-                common_unit = ""
-                original_items = []
-                
-                # 同じ単位のものを合計
-                units = {}
-                for quantity, unit, original in items:
-                    if quantity > 0:
-                        if unit in units:
-                            units[unit] += quantity
-                        else:
-                            units[unit] = quantity
-                    original_items.append(original)
-                
-                if units:
-                    # 単位ごとに表示
-                    unit_strings = []
-                    for unit, total in units.items():
-                        if total == int(total):
-                            unit_strings.append(f"{int(total)}{unit}")
-                        else:
-                            unit_strings.append(f"{total}{unit}")
-                    
-                    if len(unit_strings) == 1:
-                        grouped_results.append(f"{base_name} {unit_strings[0]}")
-                    else:
-                        grouped_results.append(f"{base_name} ({'+'.join(unit_strings)})")
-                else:
-                    # 数量不明の場合
-                    grouped_results.append(f"{base_name} ({len(items)}回分)")
-        
-        return sorted(grouped_results)
     
     def send_shopping_list_to_discord(self, shopping_list: Dict[str, Any]) -> bool:
         """買い物リストをDiscordに送信"""

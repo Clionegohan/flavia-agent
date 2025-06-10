@@ -13,7 +13,7 @@ def main():
     """アプリケーション起動"""
     try:
         # Streamlit アプリを起動
-        os.system(f"streamlit run {project_root}/src/flavia/ui/simple_app.py --server.port=8501")
+        os.system(f"streamlit run {project_root}/src/flavia/ui/app.py --server.port=8501")
     except KeyboardInterrupt:
         print("\n👋 Flavia を終了しました")
     except Exception as e:

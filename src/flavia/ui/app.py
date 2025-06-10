@@ -8,8 +8,8 @@ from pathlib import Path
 # パス設定
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from flavia.core.agent import flavia_agent
-from flavia.core.data_manager import data_manager
+from flavia.assistant import flavia_agent
+from flavia.data_manager import data_manager
 
 
 def main():
