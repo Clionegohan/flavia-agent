@@ -24,39 +24,49 @@ class FlaviaAgent:
         if not self.api_key:
             print("⚠️ ANTHROPIC_API_KEY が設定されていません")
     
-    async def generate_recipe(self, user_request: str, debug_callback=None) -> Dict[str, Any]:
-        """単発レシピ生成"""
+    async def generate(
+        self, 
+        request_type: str, 
+        user_request: str, 
+        days: int = 1, 
+        debug_callback=None
+    ) -> Dict[str, Any]:
+        """統一生成メソッド（単発レシピ・週間献立対応）"""
+        type_label = "レシピ" if request_type == "recipe" else f"{days}日分の献立"
+        
         if debug_callback:
-            debug_callback("🍳 レシピ生成開始...")
+            debug_callback(f"🍳 {type_label}生成開始...")
         
         try:
             # 個人データ読み込み
             personal_context = data_manager.create_context_for_ai()
             
-            # プロンプト作成
-            prompt = self._create_recipe_prompt(user_request, personal_context)
+            # 統一プロンプト作成
+            prompt = self._create_prompt(request_type, user_request, personal_context, days)
             
             # Claude API 呼び出し
             response = await self._call_claude_api(prompt, debug_callback)
             
             # JSON解析
-            recipe_data = self._parse_json_response(response)
+            parsed_data = self._parse_json_response(response)
+            
+            # 統一出力形式
+            result = self._format_output(request_type, parsed_data, user_request, days)
             
             if debug_callback:
-                debug_callback("✅ レシピ生成完了！")
+                debug_callback(f"✅ {type_label}生成完了！")
             
-            return {
-                "success": True,
-                "recipe": recipe_data,
-                "generation_time": datetime.now().isoformat(),
-                "request": user_request
-            }
+            return result
         
         except Exception as e:
             if debug_callback:
                 debug_callback(f"❌ エラー: {str(e)}")
             
-            raise Exception(f"レシピ生成エラー: {str(e)}")
+            raise Exception(f"{type_label}生成エラー: {str(e)}")
+    
+    async def generate_recipe(self, user_request: str, debug_callback=None) -> Dict[str, Any]:
+        """単発レシピ生成（レガシー互換）"""
+        return await self.generate("recipe", user_request, 1, debug_callback)
     
     async def generate_weekly_dinner_plan(
         self, 
@@ -64,96 +74,49 @@ class FlaviaAgent:
         user_request: str = "", 
         debug_callback=None
     ) -> Dict[str, Any]:
-        """週間夕食献立生成"""
-        if debug_callback:
-            debug_callback(f"📅 {days}日分の夕食献立生成開始...")
-        
-        try:
-            # 個人データ読み込み
-            personal_context = data_manager.create_context_for_ai()
-            
-            # プロンプト作成
-            prompt = self._create_weekly_prompt(days, user_request, personal_context)
-            
-            # Claude API 呼び出し
-            response = await self._call_claude_api(prompt, debug_callback)
-            
-            # JSON解析
-            dinner_data = self._parse_json_response(response)
-            
-            # 買い物リスト（Claude AIから直接取得）
-            shopping_list = dinner_data.get("shopping_list", {})
-            
-            if debug_callback:
-                debug_callback("✅ 週間献立生成完了！")
-            
-            return {
-                "success": True,
-                "plan_days": days,
-                "dinners": dinner_data.get("dinners", []),
-                "shopping_list": shopping_list,
-                "generation_time": datetime.now().isoformat(),
-                "request": user_request
-            }
-        
-        except Exception as e:
-            if debug_callback:
-                debug_callback(f"❌ エラー: {str(e)}")
-            
-            raise Exception(f"週間献立生成エラー: {str(e)}")
+        """週間夕食献立生成（レガシー互換）"""
+        return await self.generate("weekly", user_request, days, debug_callback)
     
-    def _create_recipe_prompt(self, user_request: str, personal_context: str) -> str:
-        """レシピ生成用プロンプト"""
-        return f"""
-あなたは個人化AI料理パートナーFlaviaです。
-栄養学と料理の専門知識を持ち、ユーザーの好みや制約に合わせた実用的なレシピを提案することが得意です。
-以下の個人情報を考慮して、実用的なレシピを提案してください。
-
-## ユーザーリクエスト
-{user_request}
-
-{personal_context}
-
-## 出力形式（必須JSON）
-以下の形式で出力してください：
-
-{{
-  "name": "料理名",
-  "description": "料理の説明",
-  "ingredients": ["材料1 分量", "材料2 分量"],
-  "instructions": ["手順1", "手順2", "手順3"],
-  "prep_time": 10,
-  "cook_time": 20,
-  "total_time": 30,
-  "servings": 1,
-  "estimated_cost": 800,
-  "difficulty": "簡単",
-  "notes": "ポイントや注意事項"
-}}
-
-**重要**: 絶対にJSON形式のみで回答してください。他のテキストは含めないでください。
-"""
+    def _create_prompt(self, request_type: str, user_request: str, personal_context: str, days: int = 1) -> str:
+        """統一プロンプト生成メソッド"""
+        if request_type == "recipe":
+            # 単発レシピ用（days=1の週間献立として処理）
+            return self._create_weekly_prompt_content(1, user_request, personal_context)
+        elif request_type == "weekly":
+            return self._create_weekly_prompt_content(days, user_request, personal_context)
+        else:
+            raise ValueError(f"未対応のリクエスト種別: {request_type}")
     
-    def _create_weekly_prompt(self, days: int, user_request: str, personal_context: str) -> str:
-        """週間献立用プロンプト"""
+    def _create_weekly_prompt_content(self, days: int, user_request: str, personal_context: str) -> str:
+        """週間献立用プロンプト内容"""
         # 多様性確保のためのランダム要素
         random.seed(int(time.time() * 1000) % 10000)
         chaos_hash = hashlib.md5(f"{time.time()}_{user_request}_{days}".encode()).hexdigest()[:8]
         
         # フォーマット例（抽象的）
         today = datetime.now()
-        cost_range = f"{random.randint(500, 800)}-{random.randint(1200, 1800)}"
         
         examples_text = f'''    {{
       "day": 1,
       "date": "{today.strftime("%Y-%m-%d")}",
       "main_dish": "メイン料理名",
-      "description": "料理の簡潔な説明",
-      "ingredients": ["食材名 数量 単位", "食材名 数量 単位"],
+      "description": "料理の魅力と特徴を2-3行で説明",
+      "ingredients": [
+        "玉ねぎ 1個（約200g・薄切り）",
+        "豚こま切れ肉 300g（一口大）",
+        "醤油 大さじ2",
+        "みりん 大さじ1"
+      ],
       "detailed_recipe": {{
         "prep_time": 準備時間（分）,
         "cook_time": 調理時間（分）,
-        "instructions": ["手順1", "手順2", "手順3"]
+        "instructions": [
+          "★準備：玉ねぎは薄切り、豚肉は一口大に切る。調味料は事前に混ぜておく",
+          "フライパンを中火で熱し、油大さじ1を入れる。豚肉を入れ、表面が白くなるまで2-3分炒める",
+          "玉ねぎを加え、中火で5分炒める。玉ねぎが透明になり、しんなりしたらOK",
+          "★ポイント：調味料を加え、弱火で2分煮絡める。焦げないよう混ぜながら調理",
+          "味見をして調整。器に盛り、お好みで青ねぎを散らして完成"
+        ]
       }},
       "estimated_cost": 予想費用,
       "difficulty": "簡単/普通/難しい"
@@ -181,31 +144,38 @@ class FlaviaAgent:
 
 {personal_context}
 
-## 材料記載の必須ルール
-- **材料は必ず「食材名 数量 単位」の形式で記載**
-- 例：「玉ねぎ 2個」「豚肉 300g」「醤油 大さじ2」
-- 数量が不明な場合も「玉ねぎ 1個」「キャベツ 1/4個」のように推定値を記載
-- 「適量」「お好みで」は避けて具体的な分量を記載
+## 材料・調理手順の詳細化ルール
+- **材料は必ず「食材名 数量 単位（下ごしらえ）」の形式で記載**
+- 例：「玉ねぎ 1個（約200g・薄切り）」「豚肉 300g（一口大）」
+- **調理手順は具体的かつ詳細に記載**
+- 火加減・時間・見た目の変化を必ず含める
+- 例：「中火で5分炒め、玉ねぎが透明になったら」
+- 重要なポイントには「★」をつけて強調
+- 「適量」「お好みで」は避けて具体的な分量・手順を記載
 
 ## 出力形式（必須JSON）
 {{
   "dinners": [
 {examples_text}
   ],
-  "shopping_list": {{
-    "vegetables": ["玉ねぎ 2個", "にんじん 1本", "キャベツ 1/4個"],
-    "meat_fish": ["豚肉 300g", "鮭 2切れ"],
-    "dairy": ["牛乳 200ml"],
-    "canned_condiments": ["ホールトマト缶 1缶"],
-    "other": ["スパゲッティ 200g"]
-  }}
+  "shopping_list": [
+    "玉ねぎ 2個", "にんじん 1本", "キャベツ 1/4個",
+    "豚肉 300g", "鮭 2切れ", 
+    "牛乳 200ml",
+    "ホールトマト缶 1缶", "スパゲッティ 200g"
+  ]
 }}
+
+## 買い物リスト作成の必須ルール
+- **必ずカテゴリ順で並べる**: 野菜類 → 肉・魚類 → 乳製品 → 調味料・缶詰 → その他の順番
+- 同じカテゴリ内ではアルファベット順に整理
+- 例：「玉ねぎ 2個, にんじん 1本, キャベツ 1/4個, 豚肉 300g, 鮭 2切れ, 牛乳 200ml, ホールトマト缶 1缶」
+- 常備品（醤油、塩、胡椒、油、だしの素等）は含めない
 
 **重要**: 
 - 必ず{days}日分すべての献立を作成してください
 - 材料は必ず「食材名 数量 単位」形式で記載してください
-- 買い物リストは野菜→肉魚→乳製品→缶詰調味料→その他の順で整理してください
-- 常備品（醤油、塩、胡椒、油等）は買い物リストに含めないでください
+- 買い物リストは必ずカテゴリ順（野菜→肉魚→乳製品→調味料→その他）で並べてください
 - 絶対にJSON形式のみで回答してください
 - 日付は{today.strftime("%Y-%m-%d")}から開始してください
 """
@@ -267,6 +237,29 @@ class FlaviaAgent:
             print(f"JSON解析エラー: {e}")
             print(f"レスポンス内容: {response[:500]}...")
             raise Exception("AI応答のJSON解析に失敗しました")
+    
+    def _format_output(self, request_type: str, parsed_data: Dict[str, Any], user_request: str, days: int) -> Dict[str, Any]:
+        """統一出力形式"""
+        base_result = {
+            "success": True,
+            "generation_time": datetime.now().isoformat(),
+            "request": user_request
+        }
+        
+        if request_type == "recipe":
+            # 単発レシピ形式
+            base_result.update({
+                "recipe": parsed_data
+            })
+        elif request_type == "weekly":
+            # 週間献立形式
+            base_result.update({
+                "plan_days": days,
+                "dinners": parsed_data.get("dinners", []),
+                "shopping_list": parsed_data.get("shopping_list", {})
+            })
+        
+        return base_result
     
     def _generate_shopping_list(self, dinners: List[Dict]) -> Dict[str, Any]:
         """買い物リスト生成（同じ食材をまとめて表示）"""
