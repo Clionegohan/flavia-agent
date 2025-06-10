@@ -5,13 +5,8 @@
 ```mermaid
 graph TD
     %% メインフロー - 統一化されたパイプライン
-    Start([ユーザーリクエスト]) --> DetermineType{リクエスト種別判定}
-    DetermineType -->|単発レシピ| SetTypeSingle[type: recipe, days: 1]
-    DetermineType -->|週間献立| SetTypeWeekly[type: weekly, days: N]
-    
-    %% 統一処理パイプライン
-    SetTypeSingle --> LoadContext[個人データ読み込み]
-    SetTypeWeekly --> LoadContext
+    Start([ユーザーリクエスト]) --> SetDays[日数設定: 1日〜N日]
+    SetDays --> LoadContext[個人データ読み込み]
     
     LoadContext --> CreatePrompt[統一プロンプト生成]
     CreatePrompt --> CallAI[Claude API呼び出し]
@@ -21,16 +16,12 @@ graph TD
     
     %% 詳細処理内容
     LoadContext --> LoadPersonalData[個人データ・嗜好・制約読み込み]
-    CreatePrompt --> WeeklyPrompt[週間献立用プロンプト<br/>・詳細レシピ手順<br/>・カテゴリ別買い物リスト<br/>・多様性ガイドライン]
+    CreatePrompt --> UnifiedPrompt[統一プロンプト<br/>・_create_weekly_prompt_content()で全処理<br/>・詳細レシピ手順<br/>・カテゴリ別買い物リスト<br/>・多様性ガイドライン]
     
     CallAI --> AIResponse[Claude AI応答<br/>・JSON形式<br/>・詳細調理手順<br/>・ソート済み買い物リスト]
     
-    FormatOutput --> RecipeFormat{単発レシピ?}
-    RecipeFormat -->|Yes| SingleRecipe[recipe: データ]
-    RecipeFormat -->|No| WeeklyPlan[dinners: 配列<br/>shopping_list: 配列]
-    
-    SingleRecipe --> ReturnResult
-    WeeklyPlan --> ReturnResult
+    FormatOutput --> FormatResult[N日分献立として出力<br/>days=1なら1日分<br/>days=7なら7日分]
+    FormatResult --> ReturnResult
     
     %% エラーハンドリング
     LoadContext --> Error{エラー?}
@@ -68,7 +59,7 @@ sequenceDiagram
     participant AI as Claude API
     
     %% 統一リクエスト処理
-    User->>UI: リクエスト（単発/週間）
+    User->>UI: リクエスト（N日分の献立）
     UI->>Agent: generate(type, request, days)
     
     %% 統一処理パイプライン
@@ -86,9 +77,9 @@ sequenceDiagram
     Agent->>Agent: _format_output(type, parsed_data, request, days)
     
     %% 出力形式の統一化
-    alt 単発レシピ (type="recipe")
+    alt 1日分献立 (days=1)
         Note over Agent: { success: true, recipe: data, generation_time, request }
-    else 週間献立 (type="weekly")  
+    else N日分献立 (days>1)  
         Note over Agent: { success: true, plan_days, dinners: [], shopping_list: [], generation_time, request }
     end
     
