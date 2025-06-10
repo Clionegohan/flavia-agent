@@ -1,195 +1,113 @@
-# 🔄 Flavia Agent プロセスフロー
+# 🔄 Flavia プロンプトアシスタント フロー
 
-## 統一化されたFlaviaAgentの処理フロー（正式版）
+## シンプルなプロンプトアシスタントの処理フロー
 
 ```mermaid
 graph TD
-    %% メインフロー - 統一化されたパイプライン
-    Start([ユーザーリクエスト]) --> SetDays[日数設定: 1日〜N日]
-    SetDays --> LoadContext[個人データ読み込み]
+    %% ユーザー入力
+    UserInput([牛肉とトマトを使った料理が食べたい]) --> UI[Streamlit UI]
+    UI --> SetDays[日数指定: 1〜7日]
     
-    LoadContext --> CreatePrompt[統一プロンプト生成]
-    CreatePrompt --> CallAI[Claude API呼び出し]
-    CallAI --> ParseJSON[JSON解析]
-    ParseJSON --> FormatOutput[統一出力形式]
-    FormatOutput --> ReturnResult[結果返却]
+    %% プロンプト構築
+    SetDays --> LoadPersonal[個人情報読み込み<br/>・嗜好・制約・常備品<br/>・過去の履歴]
+    LoadPersonal --> CombinePrompt[プロンプト結合<br/>ユーザーリクエスト + 個人情報]
     
-    %% 詳細処理内容
-    LoadContext --> LoadPersonalData[個人データ・嗜好・制約読み込み]
-    CreatePrompt --> UnifiedPrompt[統一プロンプト<br/>・_create_weekly_prompt_content()で全処理<br/>・詳細レシピ手順<br/>・カテゴリ別買い物リスト<br/>・多様性ガイドライン]
+    %% Claude AI呼び出し
+    CombinePrompt --> BuildPrompt[精巧なプロンプト構築<br/>・詳細レシピ指示<br/>・買い物リスト形式指定<br/>・多様性ガイドライン]
+    BuildPrompt --> ClaudeAPI[Claude API送信]
     
-    CallAI --> AIResponse[Claude AI応答<br/>・JSON形式<br/>・詳細調理手順<br/>・ソート済み買い物リスト]
+    %% 結果処理
+    ClaudeAPI --> AIResponse[Claude応答<br/>JSON形式で返却<br/>・N日分献立<br/>・詳細レシピ<br/>・ソート済み買い物リスト]
+    AIResponse --> ParseJSON[JSON解析]
+    ParseJSON --> DisplayUI[UI表示<br/>・献立カード<br/>・レシピ詳細<br/>・買い物リスト]
     
-    FormatOutput --> FormatResult[N日分献立として出力<br/>days=1なら1日分<br/>days=7なら7日分]
-    FormatResult --> ReturnResult
+    %% 簡潔なスタイル
+    classDef input fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef ai fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef output fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
     
-    %% エラーハンドリング
-    LoadContext --> Error{エラー?}
-    CreatePrompt --> Error
-    CallAI --> Error
-    ParseJSON --> Error
-    Error -->|Yes| HandleError[統一エラー処理]
-    Error -->|No| Continue[処理継続]
-    HandleError --> ReturnError[エラー返却]
-    Continue --> FormatOutput
-    
-    %% スタイル定義
-    classDef process fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef decision fill:#bbf,stroke:#333,stroke-width:2px;
-    classDef start fill:#9f9,stroke:#333,stroke-width:2px;
-    classDef error fill:#f99,stroke:#333,stroke-width:2px;
-    classDef unified fill:#9ff,stroke:#333,stroke-width:3px;
-    classDef detail fill:#ffe,stroke:#333,stroke-width:1px;
-    
-    class Start start;
-    class DetermineType,RecipeFormat,Error decision;
-    class SetTypeSingle,SetTypeWeekly,LoadContext,CreatePrompt,CallAI,ParseJSON,FormatOutput,SingleRecipe,WeeklyPlan process;
-    class HandleError,ReturnError error;
-    class LoadPersonalData,WeeklyPrompt,AIResponse detail;
+    class UserInput,UI,SetDays input;
+    class LoadPersonal,CombinePrompt,BuildPrompt,ParseJSON process;
+    class ClaudeAPI,AIResponse ai;
+    class DisplayUI output;
 ```
 
-## 実装された統一データフロー
+## プロンプトアシスタントの実際の動作フロー
 
 ```mermaid
 sequenceDiagram
     participant User as ユーザー
-    participant UI as UI層
-    participant Agent as FlaviaAgent
-    participant Data as DataManager
-    participant AI as Claude API
+    participant UI as Streamlit UI
+    participant Assistant as プロンプトアシスタント
+    participant PersonalData as 個人データ
+    participant Claude as Claude API
     
-    %% 統一リクエスト処理
-    User->>UI: リクエスト（N日分の献立）
-    UI->>Agent: generate(type, request, days)
+    %% ユーザー入力
+    User->>UI: 「牛肉とトマトを使った料理が食べたい」
+    UI->>UI: 日数選択（1〜7日）
     
-    %% 統一処理パイプライン
-    Agent->>Data: create_context_for_ai()
-    Data-->>Agent: 個人データ・嗜好・制約・常備品情報
+    %% プロンプト構築フェーズ
+    UI->>Assistant: generate(request, days)
+    Assistant->>PersonalData: 個人情報取得
+    PersonalData-->>Assistant: 嗜好・制約・常備品・履歴
     
-    Agent->>Agent: _create_prompt(type, request, context, days)
-    Note over Agent: 単発も週間も_create_weekly_prompt_content()で統一処理
+    Assistant->>Assistant: プロンプト結合<br/>ユーザーリクエスト + 個人情報
+    Assistant->>Assistant: 精巧なプロンプト構築<br/>詳細レシピ指示・買い物リスト形式
     
-    Agent->>AI: _call_claude_api(prompt)
-    Note over AI: 詳細レシピ手順 + カテゴリ別ソート済み買い物リスト
-    AI-->>Agent: 構造化JSONレスポンス
+    %% Claude AI呼び出しフェーズ  
+    Assistant->>Claude: 構築済みプロンプト送信
+    Note over Claude: プロンプトに従って<br/>N日分献立・詳細レシピ・<br/>ソート済み買い物リスト生成
+    Claude-->>Assistant: JSON形式レスポンス
     
-    Agent->>Agent: _parse_json_response()
-    Agent->>Agent: _format_output(type, parsed_data, request, days)
-    
-    %% 出力形式の統一化
-    alt 1日分献立 (days=1)
-        Note over Agent: { success: true, recipe: data, generation_time, request }
-    else N日分献立 (days>1)  
-        Note over Agent: { success: true, plan_days, dinners: [], shopping_list: [], generation_time, request }
-    end
-    
-    Agent-->>UI: 統一形式データ
-    UI-->>User: 結果表示（詳細レシピ + ソート済み買い物リスト）
+    %% 結果表示フェーズ
+    Assistant->>Assistant: JSON解析・形式整理
+    Assistant-->>UI: 献立データ返却
+    UI-->>User: 結果表示<br/>・献立カード<br/>・詳細レシピ<br/>・買い物リスト
 ```
 
-## 最終実装のコンポーネント関係
+## システムアーキテクチャ
 
 ```mermaid
 classDiagram
-    class FlaviaAgent {
-        +generate(type, request, days, debug_callback)
-        +generate_recipe() [レガシー互換]
-        +generate_weekly_plan() [レガシー互換]
-        -_create_prompt(type, request, context, days)
-        -_create_weekly_prompt_content(days, request, context)
-        -_call_claude_api(prompt, debug_callback)
+    class FlaviaPromptAssistant {
+        +generate(request, days)
+        +generate_recipe() [互換用]
+        +generate_weekly_plan() [互換用]
+        -_create_prompt(request, context, days)
+        -_call_claude_api(prompt)
         -_parse_json_response(response)
-        -_format_output(type, data, request, days)
-        +send_shopping_list_to_discord()
-        -_generate_shopping_list() [未使用・削除予定]
+        -_format_output(data, request, days)
     }
     
     class PersonalDataManager {
         +create_context_for_ai()
         +get_pantry_items()
-        +update_preferences()
+        +load_preferences()
+        +load_constraints()
     }
     
     class StreamlitUI {
         +handle_user_input()
-        +display_result()
+        +display_results()
         +handle_discord_integration()
     }
     
-    FlaviaAgent --> PersonalDataManager : uses
-    StreamlitUI --> FlaviaAgent : uses
+    FlaviaPromptAssistant --> PersonalDataManager : uses
+    StreamlitUI --> FlaviaPromptAssistant : uses
     
-    note for FlaviaAgent "統一プロンプトによる\n詳細レシピ生成\nClaude AIによるソート済み\n買い物リスト"
-    note for PersonalDataManager "個人嗜好・制約・常備品\n一元管理"
-    note for StreamlitUI "統一結果表示\nDiscord連携"
+    note for FlaviaPromptAssistant "精巧なプロンプトエンジニアリング\nによる料理アシスタント"
+    note for PersonalDataManager "個人化のための\nデータ管理"
+    note for StreamlitUI "シンプルなWebUI"
 ```
 
-## エラーハンドリングフロー
+## 実際の処理内容
 
-```mermaid
-graph TD
-    %% エラーハンドリングの流れ
-    Start([処理開始]) --> TryBlock{try}
-    TryBlock --> Process[メイン処理]
-    Process --> Success{成功?}
-    
-    %% 成功パス
-    Success -->|Yes| ReturnSuccess[成功レスポンス]
-    
-    %% エラーパス
-    Success -->|No| CatchBlock{catch}
-    CatchBlock --> ErrorType{エラー種別}
-    
-    %% エラー種別による分岐
-    ErrorType -->|API Error| APIError[APIエラー処理]
-    ErrorType -->|JSON Error| JSONError[JSON解析エラー]
-    ErrorType -->|Validation Error| ValidationError[バリデーションエラー]
-    ErrorType -->|Other Error| OtherError[その他エラー]
-    
-    %% エラー処理後の流れ
-    APIError --> ErrorResponse[エラーレスポンス]
-    JSONError --> ErrorResponse
-    ValidationError --> ErrorResponse
-    OtherError --> ErrorResponse
-    
-    %% スタイル定義
-    classDef process fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef decision fill:#bbf,stroke:#333,stroke-width:2px;
-    classDef error fill:#f99,stroke:#333,stroke-width:2px;
-    
-    class Start process;
-    class TryBlock,CatchBlock,Success,ErrorType decision;
-    class APIError,JSONError,ValidationError,OtherError error;
-```
+1. **入力受付**: 「牛肉とトマトを使った料理が食べたい」+ 日数選択
+2. **個人情報結合**: ユーザーの嗜好・制約・常備品情報を読み込み
+3. **プロンプト構築**: 精巧な指示文を作成（詳細レシピ・買い物リスト形式等）
+4. **Claude API呼び出し**: 構築したプロンプトをClaude AIに送信
+5. **結果解析**: JSON形式の応答を解析・整形
+6. **UI表示**: 献立・レシピ・買い物リストを表示
 
-## 最終実装による改善点
-
-1. **完全統一処理パイプライン**
-   - 単発レシピも週間献立も`_create_weekly_prompt_content()`で統一処理
-   - 統一プロンプトによる一貫した詳細レシピ生成
-   - `generate(type, request, days)` による完全統一インターフェース
-
-2. **詳細レシピ生成の実現**
-   - **具体的調理手順**: 火加減・時間・見た目の変化を明記
-   - **失敗防止**: ★マークによる重要ポイント強調
-   - **初心者対応**: 下ごしらえから仕上げまで詳細記載
-
-3. **買い物リスト最適化**
-   - **Claude AIによるカテゴリ別ソート**: 野菜→肉魚→乳製品→調味料→その他
-   - **常備品自動除外**: 醤油・塩・胡椒・油等は自動除外
-   - **スーパー効率**: 売り場順の並び替えで買い物時間短縮
-
-4. **プロンプト最適化**
-   - **多様性ガイドライン**: 3日連続同ジャンル防止・調理法バリエーション
-   - **自然言語での明示的指示**: Claude AIが理解しやすい具体的ルール
-   - **フォーマット統一**: JSON構造の最適化
-
-5. **レガシー互換性維持**
-   - `generate_recipe()` / `generate_weekly_plan()` は内部で統一メソッド呼び出し
-   - UI層の変更不要
-   - 段階的移行による破壊的変更回避
-
-6. **コード品質向上**
-   - 重複コード削除（単発用プロンプト削除）
-   - 一元化されたエラーハンドリング
-   - 保守性とテスタビリティの向上
+**本質**: AIエージェントではなく、**個人化されたプロンプトエンジニアリングシステム**
